@@ -97,6 +97,23 @@ class DatabaseManager: ObservableObject {
         CREATE INDEX IF NOT EXISTS idx_bookmarks_author ON bookmarks(author_handle);
         CREATE INDEX IF NOT EXISTS idx_bookmarks_favorite ON bookmarks(is_favorite);
         CREATE INDEX IF NOT EXISTS idx_bookmarks_folder ON bookmarks(folder_id);
+
+        CREATE TABLE IF NOT EXISTS bookmark_embeddings (
+            bookmark_id TEXT PRIMARY KEY REFERENCES bookmarks(id) ON DELETE CASCADE,
+            embedding BLOB NOT NULL,
+            embedding_model TEXT NOT NULL,
+            created_at TEXT DEFAULT (datetime('now'))
+        );
+
+        CREATE TABLE IF NOT EXISTS chat_messages (
+            id TEXT PRIMARY KEY,
+            role TEXT NOT NULL,
+            content TEXT NOT NULL,
+            context_bookmark_ids TEXT,
+            created_at TEXT DEFAULT (datetime('now'))
+        );
+
+        CREATE INDEX IF NOT EXISTS idx_chat_messages_created ON chat_messages(created_at);
         """
 
         executeSQL(createTables)
@@ -286,6 +303,17 @@ class DatabaseManager: ObservableObject {
         executeSQL("DELETE FROM bookmarks WHERE id = '\(bookmarkId)'")
         loadStats()
         notifyDataChanged()
+    }
+
+    func updateSummary(_ bookmarkId: String, summary: String) {
+        let escaped = summary.replacingOccurrences(of: "'", with: "''")
+        executeSQL("UPDATE bookmarks SET summary = '\(escaped)' WHERE id = '\(bookmarkId)'")
+        notifyDataChanged()
+    }
+
+    func getBookmarksWithoutSummary(limit: Int = 1000) -> [Bookmark] {
+        let sql = "SELECT * FROM bookmarks WHERE summary IS NULL OR summary = '' LIMIT \(limit)"
+        return queryBookmarks(sql)
     }
 
     // MARK: - Tags
@@ -728,6 +756,132 @@ class DatabaseManager: ObservableObject {
             }
         }
         sqlite3_finalize(statement)
+    }
+
+    // MARK: - Embeddings
+
+    struct StoredEmbedding {
+        let bookmarkId: String
+        let vector: [Float]
+        let model: String
+    }
+
+    func saveEmbedding(bookmarkId: String, embedding: Data, model: String) {
+        let sql = "INSERT OR REPLACE INTO bookmark_embeddings (bookmark_id, embedding, embedding_model) VALUES (?, ?, ?)"
+        var statement: OpaquePointer?
+
+        if sqlite3_prepare_v2(db, sql, -1, &statement, nil) == SQLITE_OK {
+            sqlite3_bind_text(statement, 1, bookmarkId, -1, unsafeBitCast(-1, to: sqlite3_destructor_type.self))
+            sqlite3_bind_blob(statement, 2, (embedding as NSData).bytes, Int32(embedding.count), unsafeBitCast(-1, to: sqlite3_destructor_type.self))
+            sqlite3_bind_text(statement, 3, model, -1, unsafeBitCast(-1, to: sqlite3_destructor_type.self))
+            sqlite3_step(statement)
+        }
+        sqlite3_finalize(statement)
+    }
+
+    func loadAllEmbeddings() -> [StoredEmbedding] {
+        var embeddings: [StoredEmbedding] = []
+        var statement: OpaquePointer?
+
+        let sql = "SELECT bookmark_id, embedding, embedding_model FROM bookmark_embeddings"
+
+        if sqlite3_prepare_v2(db, sql, -1, &statement, nil) == SQLITE_OK {
+            while sqlite3_step(statement) == SQLITE_ROW {
+                let bookmarkId = String(cString: sqlite3_column_text(statement, 0))
+                let blobPointer = sqlite3_column_blob(statement, 1)
+                let blobSize = Int(sqlite3_column_bytes(statement, 1))
+                let model = String(cString: sqlite3_column_text(statement, 2))
+
+                if let blobPointer = blobPointer {
+                    let data = Data(bytes: blobPointer, count: blobSize)
+                    let vector = EmbeddingService.shared.dataToVector(data)
+                    embeddings.append(StoredEmbedding(bookmarkId: bookmarkId, vector: vector, model: model))
+                }
+            }
+        }
+        sqlite3_finalize(statement)
+
+        return embeddings
+    }
+
+    func getBookmarksWithoutEmbedding() -> [Bookmark] {
+        let sql = """
+        SELECT b.* FROM bookmarks b
+        LEFT JOIN bookmark_embeddings e ON b.id = e.bookmark_id
+        WHERE e.bookmark_id IS NULL
+        """
+        return queryBookmarks(sql)
+    }
+
+    func getEmbeddingCount() -> Int {
+        return queryScalar("SELECT COUNT(*) FROM bookmark_embeddings") ?? 0
+    }
+
+    func hasEmbedding(bookmarkId: String) -> Bool {
+        let count = queryScalar("SELECT COUNT(*) FROM bookmark_embeddings WHERE bookmark_id = '\(bookmarkId)'") ?? 0
+        return count > 0
+    }
+
+    // MARK: - Chat Messages
+
+    struct ChatMessage {
+        let id: String
+        let role: String
+        let content: String
+        let contextBookmarkIds: [String]
+        let createdAt: Date
+    }
+
+    func saveChatMessage(id: String, role: String, content: String, contextBookmarkIds: [String]?) {
+        let contextJson = contextBookmarkIds.flatMap { try? JSONEncoder().encode($0) }.flatMap { String(data: $0, encoding: .utf8) }
+        let escapedContent = content.replacingOccurrences(of: "'", with: "''")
+
+        var sql: String
+        if let contextJson = contextJson {
+            let escapedContext = contextJson.replacingOccurrences(of: "'", with: "''")
+            sql = "INSERT INTO chat_messages (id, role, content, context_bookmark_ids) VALUES ('\(id)', '\(role)', '\(escapedContent)', '\(escapedContext)')"
+        } else {
+            sql = "INSERT INTO chat_messages (id, role, content) VALUES ('\(id)', '\(role)', '\(escapedContent)')"
+        }
+
+        executeSQL(sql)
+    }
+
+    func loadChatHistory(limit: Int = 50) -> [ChatMessage] {
+        var messages: [ChatMessage] = []
+        var statement: OpaquePointer?
+
+        let sql = "SELECT id, role, content, context_bookmark_ids, created_at FROM chat_messages ORDER BY created_at DESC LIMIT \(limit)"
+
+        if sqlite3_prepare_v2(db, sql, -1, &statement, nil) == SQLITE_OK {
+            while sqlite3_step(statement) == SQLITE_ROW {
+                let id = String(cString: sqlite3_column_text(statement, 0))
+                let role = String(cString: sqlite3_column_text(statement, 1))
+                let content = String(cString: sqlite3_column_text(statement, 2))
+                let contextJson = sqlite3_column_text(statement, 3).map { String(cString: $0) }
+                let createdAtStr = String(cString: sqlite3_column_text(statement, 4))
+
+                var contextIds: [String] = []
+                if let json = contextJson, let data = json.data(using: .utf8) {
+                    contextIds = (try? JSONDecoder().decode([String].self, from: data)) ?? []
+                }
+
+                messages.append(ChatMessage(
+                    id: id,
+                    role: role,
+                    content: content,
+                    contextBookmarkIds: contextIds,
+                    createdAt: parseDate(createdAtStr) ?? Date()
+                ))
+            }
+        }
+        sqlite3_finalize(statement)
+
+        return messages.reversed()  // Return in chronological order
+    }
+
+    func clearChatHistory() {
+        executeSQL("DELETE FROM chat_messages")
     }
 
     // MARK: - Helpers

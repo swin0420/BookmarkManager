@@ -18,6 +18,15 @@
 		A1000009 /* FilterBarView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2000009; };
 		A1000011 /* BookmarkGridView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2000011; };
 		A1000012 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = A2000012; };
+		A1000020 /* KeychainService.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2000020; };
+		A1000021 /* ClaudeAPIService.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2000021; };
+		A1000022 /* AIService.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2000022; };
+		A1000023 /* EmbeddingService.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2000023; };
+		A1000024 /* SemanticSearchService.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2000024; };
+		A1000025 /* RAGService.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2000025; };
+		A1000030 /* AISettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2000030; };
+		A1000031 /* BatchProcessingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2000031; };
+		A1000032 /* ChatView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2000032; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -32,6 +41,15 @@
 		A2000009 /* FilterBarView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FilterBarView.swift; sourceTree = "<group>"; };
 		A2000011 /* BookmarkGridView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BookmarkGridView.swift; sourceTree = "<group>"; };
 		A2000012 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		A2000020 /* KeychainService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeychainService.swift; sourceTree = "<group>"; };
+		A2000021 /* ClaudeAPIService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ClaudeAPIService.swift; sourceTree = "<group>"; };
+		A2000022 /* AIService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AIService.swift; sourceTree = "<group>"; };
+		A2000023 /* EmbeddingService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EmbeddingService.swift; sourceTree = "<group>"; };
+		A2000024 /* SemanticSearchService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SemanticSearchService.swift; sourceTree = "<group>"; };
+		A2000025 /* RAGService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RAGService.swift; sourceTree = "<group>"; };
+		A2000030 /* AISettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AISettingsView.swift; sourceTree = "<group>"; };
+		A2000031 /* BatchProcessingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BatchProcessingView.swift; sourceTree = "<group>"; };
+		A2000032 /* ChatView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChatView.swift; sourceTree = "<group>"; };
 		A3000001 /* BookmarkManager.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = BookmarkManager.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		A3000002 /* BookmarkManager.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = BookmarkManager.entitlements; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -62,6 +80,7 @@
 				A2000002 /* ContentView.swift */,
 				A5000004 /* Models */,
 				A5000005 /* Database */,
+				A5000008 /* Services */,
 				A5000006 /* Views */,
 				A5000007 /* Styles */,
 				A2000012 /* Assets.xcassets */,
@@ -102,6 +121,7 @@
 				A2000008 /* SidebarView.swift */,
 				A2000009 /* FilterBarView.swift */,
 				A2000011 /* BookmarkGridView.swift */,
+				A5000009 /* AI */,
 			);
 			path = Views;
 			sourceTree = "<group>";
@@ -112,6 +132,29 @@
 				A2000007 /* GlassmorphismStyle.swift */,
 			);
 			path = Styles;
+			sourceTree = "<group>";
+		};
+		A5000008 /* Services */ = {
+			isa = PBXGroup;
+			children = (
+				A2000020 /* KeychainService.swift */,
+				A2000021 /* ClaudeAPIService.swift */,
+				A2000022 /* AIService.swift */,
+				A2000023 /* EmbeddingService.swift */,
+				A2000024 /* SemanticSearchService.swift */,
+				A2000025 /* RAGService.swift */,
+			);
+			path = Services;
+			sourceTree = "<group>";
+		};
+		A5000009 /* AI */ = {
+			isa = PBXGroup;
+			children = (
+				A2000030 /* AISettingsView.swift */,
+				A2000031 /* BatchProcessingView.swift */,
+				A2000032 /* ChatView.swift */,
+			);
+			path = AI;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -193,6 +236,15 @@
 				A1000008 /* SidebarView.swift in Sources */,
 				A1000009 /* FilterBarView.swift in Sources */,
 				A1000011 /* BookmarkGridView.swift in Sources */,
+				A1000020 /* KeychainService.swift in Sources */,
+				A1000021 /* ClaudeAPIService.swift in Sources */,
+				A1000022 /* AIService.swift in Sources */,
+				A1000023 /* EmbeddingService.swift in Sources */,
+				A1000024 /* SemanticSearchService.swift in Sources */,
+				A1000025 /* RAGService.swift in Sources */,
+				A1000030 /* AISettingsView.swift in Sources */,
+				A1000031 /* BatchProcessingView.swift in Sources */,
+				A1000032 /* ChatView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

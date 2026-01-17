@@ -282,6 +282,9 @@ struct MainContentView: View {
         .onChange(of: appState.sortOrder) { _, _ in
             loadBookmarks()
         }
+        .onChange(of: appState.isSemanticSearchEnabled) { _, _ in
+            loadBookmarks()
+        }
         .onChange(of: dbManager.dataVersion) { _, _ in
             // Refresh bookmarks without full reload to avoid blinking
             refreshBookmarks()
@@ -294,44 +297,79 @@ struct MainContentView: View {
         DispatchQueue.global(qos: .userInitiated).async {
             var results: [Bookmark] = []
 
-            switch appState.selectedSection {
-            case .smartCollection(let type):
-                results = dbManager.getSmartCollectionBookmarks(
-                    type,
-                    author: appState.selectedAuthor,
-                    query: appState.searchQuery.isEmpty ? nil : appState.searchQuery
-                )
-            default:
-                var tagId: String?
-                var folderId: String?
-                var favoritesOnly = false
+            // Check if semantic search is enabled and we have a query
+            if appState.isSemanticSearchEnabled && !appState.searchQuery.isEmpty {
+                // Use semantic search
+                let searchResults = SemanticSearchService.shared.search(query: appState.searchQuery, limit: 100)
+                let bookmarkIds = searchResults.map { $0.bookmarkId }
 
+                // Fetch bookmarks by IDs while preserving order
+                let allBookmarks = dbManager.searchBookmarks(limit: 10000)
+                let bookmarkMap = Dictionary(uniqueKeysWithValues: allBookmarks.map { ($0.id, $0) })
+
+                for id in bookmarkIds {
+                    if let bookmark = bookmarkMap[id] {
+                        // Apply additional filters
+                        var include = true
+
+                        if let author = appState.selectedAuthor, !author.isEmpty {
+                            include = include && bookmark.authorHandle == author
+                        }
+
+                        if let dateFrom = appState.dateFrom {
+                            include = include && bookmark.postedAt >= dateFrom
+                        }
+
+                        if let dateTo = appState.dateTo {
+                            include = include && bookmark.postedAt <= dateTo
+                        }
+
+                        if include {
+                            results.append(bookmark)
+                        }
+                    }
+                }
+            } else {
+                // Regular search
                 switch appState.selectedSection {
-                case .allBookmarks:
-                    break
-                case .favorites:
-                    favoritesOnly = true
-                case .folder(let id):
-                    folderId = id
-                case .tag(let id):
-                    tagId = id
+                case .smartCollection(let type):
+                    results = dbManager.getSmartCollectionBookmarks(
+                        type,
+                        author: appState.selectedAuthor,
+                        query: appState.searchQuery.isEmpty ? nil : appState.searchQuery
+                    )
                 default:
-                    break
+                    var tagId: String?
+                    var folderId: String?
+                    var favoritesOnly = false
+
+                    switch appState.selectedSection {
+                    case .allBookmarks:
+                        break
+                    case .favorites:
+                        favoritesOnly = true
+                    case .folder(let id):
+                        folderId = id
+                    case .tag(let id):
+                        tagId = id
+                    default:
+                        break
+                    }
+
+                    results = dbManager.searchBookmarks(
+                        query: appState.searchQuery.isEmpty ? nil : appState.searchQuery,
+                        author: appState.selectedAuthor,
+                        tagId: tagId,
+                        folderId: folderId,
+                        favoritesOnly: favoritesOnly,
+                        dateFrom: appState.dateFrom,
+                        dateTo: appState.dateTo
+                    )
                 }
 
-                results = dbManager.searchBookmarks(
-                    query: appState.searchQuery.isEmpty ? nil : appState.searchQuery,
-                    author: appState.selectedAuthor,
-                    tagId: tagId,
-                    folderId: folderId,
-                    favoritesOnly: favoritesOnly,
-                    dateFrom: appState.dateFrom,
-                    dateTo: appState.dateTo
-                )
+                // Apply sorting (semantic search preserves relevance order)
+                results = sortBookmarks(results)
             }
-
-            // Apply sorting
-            results = sortBookmarks(results)
 
             DispatchQueue.main.async {
                 self.bookmarks = results

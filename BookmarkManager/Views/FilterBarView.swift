@@ -17,8 +17,35 @@ struct FilterBarView: View {
     var body: some View {
         HStack(spacing: 12) {
             // Search field
-            GlassSearchField(text: $appState.searchQuery, placeholder: "Search bookmarks...")
+            GlassSearchField(text: $appState.searchQuery, placeholder: appState.isSemanticSearchEnabled ? "Search by meaning..." : "Search bookmarks...")
                 .frame(maxWidth: 300)
+
+            // Semantic search toggle
+            Button(action: {
+                withAnimation(.easeInOut(duration: 0.2)) {
+                    appState.isSemanticSearchEnabled.toggle()
+                }
+            }) {
+                HStack(spacing: 6) {
+                    Image(systemName: "brain")
+                        .font(.system(size: 12))
+                    Text("Semantic")
+                        .font(.system(size: 12))
+                }
+                .foregroundColor(appState.isSemanticSearchEnabled ? .purple : .white.opacity(0.5))
+                .padding(.horizontal, 10)
+                .padding(.vertical, 7)
+                .background(
+                    RoundedRectangle(cornerRadius: 8)
+                        .fill(appState.isSemanticSearchEnabled ? Color.purple.opacity(0.2) : Color.white.opacity(0.05))
+                )
+                .overlay(
+                    RoundedRectangle(cornerRadius: 8)
+                        .stroke(appState.isSemanticSearchEnabled ? Color.purple.opacity(0.5) : Color.white.opacity(0.1), lineWidth: 1)
+                )
+            }
+            .buttonStyle(.plain)
+            .help("Toggle semantic search (search by meaning)")
 
             // Author filter
             Menu {

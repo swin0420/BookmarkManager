@@ -6,6 +6,9 @@ struct SidebarView: View {
     @State private var showNewFolderSheet = false
     @State private var showNewTagSheet = false
     @State private var showClearAllConfirm = false
+    @State private var showSettingsSheet = false
+    @State private var showChatSheet = false
+    @State private var showBatchProcessingSheet = false
     @State private var foldersExpanded = true
     @State private var tagsExpanded = true
     @State private var smartCollectionsExpanded = true
@@ -88,6 +91,72 @@ struct SidebarView: View {
                             }
 
                         }
+                    }
+
+                    // AI section
+                    VStack(alignment: .leading, spacing: 4) {
+                        Text("AI")
+                            .font(.system(size: 11, weight: .semibold))
+                            .foregroundColor(.white.opacity(0.4))
+                            .tracking(1)
+                            .padding(.horizontal, 12)
+                            .padding(.bottom, 8)
+
+                        Button(action: { showChatSheet = true }) {
+                            HStack(spacing: 10) {
+                                Image(systemName: "brain")
+                                    .font(.system(size: 14))
+                                    .foregroundColor(.purple)
+                                    .frame(width: 20)
+
+                                Text("Chat with Bookmarks")
+                                    .font(.system(size: 13))
+                                    .foregroundColor(.white.opacity(0.8))
+
+                                Spacer()
+                            }
+                            .padding(.horizontal, 12)
+                            .padding(.vertical, 8)
+                            .background(
+                                RoundedRectangle(cornerRadius: 8)
+                                    .fill(Color.clear)
+                            )
+                        }
+                        .buttonStyle(.plain)
+
+                        Button(action: { showBatchProcessingSheet = true }) {
+                            HStack(spacing: 10) {
+                                Image(systemName: "sparkles")
+                                    .font(.system(size: 14))
+                                    .foregroundColor(.purple)
+                                    .frame(width: 20)
+
+                                Text("Batch Summarize")
+                                    .font(.system(size: 13))
+                                    .foregroundColor(.white.opacity(0.8))
+
+                                Spacer()
+
+                                if dbManager.stats.unprocessed > 0 {
+                                    Text("\(dbManager.stats.unprocessed)")
+                                        .font(.system(size: 11, weight: .medium))
+                                        .foregroundColor(.purple)
+                                        .padding(.horizontal, 8)
+                                        .padding(.vertical, 3)
+                                        .background(
+                                            Capsule()
+                                                .fill(Color.purple.opacity(0.2))
+                                        )
+                                }
+                            }
+                            .padding(.horizontal, 12)
+                            .padding(.vertical, 8)
+                            .background(
+                                RoundedRectangle(cornerRadius: 8)
+                                    .fill(Color.clear)
+                            )
+                        }
+                        .buttonStyle(.plain)
                     }
 
                     // Folders section
@@ -207,6 +276,24 @@ struct SidebarView: View {
                 Divider()
                     .background(Color.white.opacity(0.1))
 
+                Button(action: { showSettingsSheet = true }) {
+                    HStack {
+                        Image(systemName: "gearshape.fill")
+                            .font(.system(size: 14))
+                        Text("AI Settings")
+                            .font(.system(size: 13))
+                    }
+                    .foregroundColor(.purple)
+                    .frame(maxWidth: .infinity)
+                    .padding(.vertical, 10)
+                    .background(
+                        RoundedRectangle(cornerRadius: 8)
+                            .fill(Color.purple.opacity(0.15))
+                    )
+                }
+                .buttonStyle(.plain)
+                .padding(.horizontal, 12)
+
                 Button(action: importDatabase) {
                     HStack {
                         Image(systemName: "square.and.arrow.down")
@@ -263,6 +350,15 @@ struct SidebarView: View {
         }
         .sheet(isPresented: $showNewTagSheet) {
             NewTagSheet(isPresented: $showNewTagSheet)
+        }
+        .sheet(isPresented: $showSettingsSheet) {
+            AISettingsView()
+        }
+        .sheet(isPresented: $showChatSheet) {
+            ChatView()
+        }
+        .sheet(isPresented: $showBatchProcessingSheet) {
+            BatchProcessingView(mode: .summarize)
         }
     }
 

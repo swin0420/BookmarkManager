@@ -180,6 +180,10 @@ class AppState: ObservableObject {
 
     // Media preview
     @Published var expandedMediaBookmarkId: String?
+
+    // AI Features
+    @Published var isSemanticSearchEnabled: Bool = false
+    @Published var showChatView: Bool = false
 }
 
 enum SortOrder: String, CaseIterable {

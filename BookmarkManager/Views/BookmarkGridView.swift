@@ -53,6 +53,10 @@ struct BookmarkCardView: View {
     @EnvironmentObject var dbManager: DatabaseManager
     @State private var isHovered = false
     @State private var showDetailSheet = false
+    @State private var isGeneratingSummary = false
+    @State private var showTagSuggestions = false
+    @State private var tagSuggestions: [AIService.TagSuggestion] = []
+    @State private var isLoadingTags = false
 
     var isSelected: Bool {
         appState.selectedBookmarkIds.contains(bookmark.id)
@@ -147,6 +151,24 @@ struct BookmarkCardView: View {
                 showDetailSheet = true
             }
 
+            // AI Summary
+            if let summary = bookmark.summary, !summary.isEmpty {
+                HStack(alignment: .top, spacing: 6) {
+                    Image(systemName: "sparkles")
+                        .font(.system(size: 10))
+                        .foregroundColor(.purple)
+                    Text(summary)
+                        .font(.system(size: 11))
+                        .foregroundColor(.purple.opacity(0.9))
+                        .lineLimit(3)
+                }
+                .padding(8)
+                .background(
+                    RoundedRectangle(cornerRadius: 8)
+                        .fill(Color.purple.opacity(0.1))
+                )
+            }
+
             // Media - enhanced grid
             if !bookmark.mediaUrls.isEmpty {
                 MediaGridViewCompact(mediaUrls: bookmark.mediaUrls, onTap: { _ in
@@ -177,6 +199,56 @@ struct BookmarkCardView: View {
 
                 // Action buttons - always visible
                 HStack(spacing: 10) {
+                    // AI Summarize button
+                    Button(action: generateSummary) {
+                        if isGeneratingSummary {
+                            ProgressView()
+                                .scaleEffect(0.5)
+                                .frame(width: 13, height: 13)
+                        } else {
+                            Image(systemName: "sparkles")
+                                .font(.system(size: 13))
+                                .foregroundColor(bookmark.summary != nil ? .purple : .white.opacity(0.4))
+                        }
+                    }
+                    .buttonStyle(.plain)
+                    .disabled(isGeneratingSummary)
+                    .help("Generate AI summary")
+
+                    // AI Tag suggestions
+                    Menu {
+                        if isLoadingTags {
+                            Text("Loading suggestions...")
+                        } else if tagSuggestions.isEmpty {
+                            Button("Get tag suggestions") {
+                                loadTagSuggestions()
+                            }
+                        } else {
+                            ForEach(tagSuggestions, id: \.name) { suggestion in
+                                Button {
+                                    applyTagSuggestion(suggestion)
+                                } label: {
+                                    HStack {
+                                        Text(suggestion.name)
+                                        Spacer()
+                                        Text("\(Int(suggestion.confidence * 100))%")
+                                            .foregroundColor(.secondary)
+                                    }
+                                }
+                            }
+                            Divider()
+                            Button("Refresh suggestions") {
+                                loadTagSuggestions()
+                            }
+                        }
+                    } label: {
+                        Image(systemName: "tag")
+                            .font(.system(size: 13))
+                            .foregroundColor(.white.opacity(0.4))
+                    }
+                    .menuStyle(.borderlessButton)
+                    .help("AI tag suggestions")
+
                     Button(action: { dbManager.toggleFavorite(bookmark.id) }) {
                         Image(systemName: bookmark.isFavorite ? "star.fill" : "star")
                             .font(.system(size: 13))
@@ -249,6 +321,76 @@ struct BookmarkCardView: View {
         formatter.dateStyle = .medium
         formatter.timeStyle = .none
         return formatter.string(from: date)
+    }
+
+    private func generateSummary() {
+        guard !isGeneratingSummary else { return }
+        guard KeychainService.shared.hasClaudeAPIKey() else { return }
+
+        isGeneratingSummary = true
+
+        Task {
+            do {
+                let summary = try await AIService.shared.summarize(
+                    content: bookmark.content,
+                    authorName: bookmark.authorName
+                )
+                await MainActor.run {
+                    dbManager.updateSummary(bookmark.id, summary: summary)
+                    isGeneratingSummary = false
+                }
+            } catch {
+                await MainActor.run {
+                    isGeneratingSummary = false
+                }
+                print("Summary generation failed: \(error)")
+            }
+        }
+    }
+
+    private func loadTagSuggestions() {
+        guard !isLoadingTags else { return }
+        guard KeychainService.shared.hasClaudeAPIKey() else { return }
+
+        isLoadingTags = true
+
+        Task {
+            do {
+                let existingTags = dbManager.tags.map { $0.name }
+                let suggestions = try await AIService.shared.suggestTags(
+                    content: bookmark.content,
+                    existingTags: existingTags
+                )
+                await MainActor.run {
+                    tagSuggestions = suggestions
+                    isLoadingTags = false
+                }
+            } catch {
+                await MainActor.run {
+                    isLoadingTags = false
+                }
+                print("Tag suggestion failed: \(error)")
+            }
+        }
+    }
+
+    private func applyTagSuggestion(_ suggestion: AIService.TagSuggestion) {
+        // Check if tag exists
+        if let existingTag = dbManager.tags.first(where: { $0.name.lowercased() == suggestion.name.lowercased() }) {
+            dbManager.addTagToBookmark(bookmark.id, tagId: existingTag.id)
+        } else {
+            // Create new tag and add it
+            let colors = ["#ef4444", "#f59e0b", "#22c55e", "#3b82f6", "#8b5cf6", "#ec4899"]
+            let randomColor = colors.randomElement() ?? "#6b7280"
+            dbManager.createTag(name: suggestion.name, color: randomColor, isQuickTag: false)
+
+            // Find the newly created tag and add it
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+                if let newTag = dbManager.tags.first(where: { $0.name.lowercased() == suggestion.name.lowercased() }) {
+                    dbManager.addTagToBookmark(bookmark.id, tagId: newTag.id)
+                }
+            }
+        }
     }
 }
 

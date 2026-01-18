@@ -128,13 +128,10 @@ class DatabaseManager: ObservableObject {
         let count = queryScalar("SELECT COUNT(*) FROM tags") ?? 0
         if count == 0 {
             let defaultTags = [
-                ("hentai", "#ec4899"),
-                ("vibecoding", "#8b5cf6"),
-                ("crypto", "#f59e0b"),
-                ("tech", "#3b82f6"),
                 ("anime", "#ef4444"),
-                ("visual-novel", "#10b981"),
-                ("misc", "#6b7280")
+                ("hentai", "#ec4899"),
+                ("artificial-intelligence", "#8b5cf6"),
+                ("tech", "#3b82f6")
             ]
 
             for (name, color) in defaultTags {

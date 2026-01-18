@@ -30,7 +30,9 @@ class SemanticSearchService {
     func search(query: String, limit: Int = 50) -> [SemanticSearchResult] {
         // Generate query embedding
         guard let queryVector = embeddingService.embed(text: query) else {
+            #if DEBUG
             print("Failed to embed query")
+            #endif
             return []
         }
 
@@ -38,7 +40,9 @@ class SemanticSearchService {
         let embeddings = loadEmbeddingsWithCache()
 
         guard !embeddings.isEmpty else {
+            #if DEBUG
             print("No embeddings in database")
+            #endif
             return []
         }
 
@@ -72,7 +76,9 @@ class SemanticSearchService {
     /// Generate and store embedding for a single bookmark
     func generateEmbedding(for bookmark: Bookmark) async {
         guard let vector = embeddingService.embed(text: bookmark.content) else {
+            #if DEBUG
             print("Failed to generate embedding for bookmark \(bookmark.id)")
+            #endif
             return
         }
 

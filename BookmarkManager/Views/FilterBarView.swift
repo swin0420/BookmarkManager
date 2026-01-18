@@ -3,9 +3,14 @@ import SwiftUI
 struct FilterBarView: View {
     @EnvironmentObject var appState: AppState
     @EnvironmentObject var dbManager: DatabaseManager
+    @Environment(\.colorScheme) var colorScheme
     let accentColor: Color
     @State private var showFromPicker = false
     @State private var showToPicker = false
+
+    private var themeColors: ThemeColors {
+        ThemeColors(colorScheme: colorScheme)
+    }
 
     private let dateFormatter: DateFormatter = {
         let formatter = DateFormatter()
@@ -33,16 +38,16 @@ struct FilterBarView: View {
                         Text("Semantic")
                             .font(.system(size: 12))
                     }
-                    .foregroundColor(appState.isSemanticSearchEnabled ? .purple : .white.opacity(0.5))
+                    .foregroundColor(appState.isSemanticSearchEnabled ? .purple : themeColors.tertiaryText)
                     .padding(.horizontal, 10)
                     .padding(.vertical, 7)
                     .background(
                         RoundedRectangle(cornerRadius: 8)
-                            .fill(appState.isSemanticSearchEnabled ? Color.purple.opacity(0.2) : Color.white.opacity(0.05))
+                            .fill(appState.isSemanticSearchEnabled ? Color.purple.opacity(0.2) : themeColors.hoverBackground)
                     )
                     .overlay(
                         RoundedRectangle(cornerRadius: 8)
-                            .stroke(appState.isSemanticSearchEnabled ? Color.purple.opacity(0.5) : Color.white.opacity(0.1), lineWidth: 1)
+                            .stroke(appState.isSemanticSearchEnabled ? Color.purple.opacity(0.5) : themeColors.divider, lineWidth: 1)
                     )
                 }
                 .buttonStyle(.plain)
@@ -71,16 +76,16 @@ struct FilterBarView: View {
                     Image(systemName: "chevron.down")
                         .font(.system(size: 10))
                 }
-                .foregroundColor(.white.opacity(0.7))
+                .foregroundColor(themeColors.secondaryText)
                 .padding(.horizontal, 12)
                 .padding(.vertical, 8)
                 .background(
                     RoundedRectangle(cornerRadius: 8)
-                        .fill(Color.white.opacity(0.08))
+                        .fill(themeColors.inputBackground)
                 )
                 .overlay(
                     RoundedRectangle(cornerRadius: 8)
-                        .stroke(Color.white.opacity(0.1), lineWidth: 1)
+                        .stroke(themeColors.divider, lineWidth: 1)
                 )
             }
             .menuStyle(.borderlessButton)
@@ -98,21 +103,21 @@ struct FilterBarView: View {
                         }) {
                             Image(systemName: "xmark.circle.fill")
                                 .font(.system(size: 12))
-                                .foregroundColor(.white.opacity(0.4))
+                                .foregroundColor(themeColors.mutedText)
                         }
                         .buttonStyle(.plain)
                     }
                 }
-                .foregroundColor(.white.opacity(0.7))
+                .foregroundColor(themeColors.secondaryText)
                 .padding(.horizontal, 12)
                 .padding(.vertical, 8)
                 .background(
                     RoundedRectangle(cornerRadius: 8)
-                        .fill(Color.white.opacity(0.08))
+                        .fill(themeColors.inputBackground)
                 )
                 .overlay(
                     RoundedRectangle(cornerRadius: 8)
-                        .stroke(Color.white.opacity(0.1), lineWidth: 1)
+                        .stroke(themeColors.divider, lineWidth: 1)
                 )
             }
             .buttonStyle(.plain)
@@ -155,21 +160,21 @@ struct FilterBarView: View {
                         }) {
                             Image(systemName: "xmark.circle.fill")
                                 .font(.system(size: 12))
-                                .foregroundColor(.white.opacity(0.4))
+                                .foregroundColor(themeColors.mutedText)
                         }
                         .buttonStyle(.plain)
                     }
                 }
-                .foregroundColor(.white.opacity(0.7))
+                .foregroundColor(themeColors.secondaryText)
                 .padding(.horizontal, 12)
                 .padding(.vertical, 8)
                 .background(
                     RoundedRectangle(cornerRadius: 8)
-                        .fill(Color.white.opacity(0.08))
+                        .fill(themeColors.inputBackground)
                 )
                 .overlay(
                     RoundedRectangle(cornerRadius: 8)
-                        .stroke(Color.white.opacity(0.1), lineWidth: 1)
+                        .stroke(themeColors.divider, lineWidth: 1)
                 )
             }
             .buttonStyle(.plain)

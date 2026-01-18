@@ -2,7 +2,12 @@ import SwiftUI
 
 struct ChatView: View {
     @Environment(\.dismiss) var dismiss
+    @Environment(\.colorScheme) var colorScheme
     @EnvironmentObject var dbManager: DatabaseManager
+
+    private var themeColors: ThemeColors {
+        ThemeColors(colorScheme: colorScheme)
+    }
 
     @State private var inputText = ""
     @State private var messages: [ChatMessageItem] = []
@@ -85,11 +90,11 @@ struct ChatView: View {
                         VStack(alignment: .leading, spacing: 2) {
                             Text("Scout")
                                 .font(.system(size: 16, weight: .semibold))
-                                .foregroundColor(.white)
+                                .foregroundColor(themeColors.primaryText)
 
                             Text("POWERED BY YOUR BOOKMARKS")
                                 .font(.system(size: 10, weight: .medium))
-                                .foregroundColor(.white.opacity(0.4))
+                                .foregroundColor(themeColors.mutedText)
                                 .tracking(0.5)
                         }
                     }
@@ -100,7 +105,7 @@ struct ChatView: View {
                     Button(action: { clearChat() }) {
                         Image(systemName: "arrow.counterclockwise")
                             .font(.system(size: 14, weight: .medium))
-                            .foregroundColor(.white.opacity(0.6))
+                            .foregroundColor(themeColors.tertiaryText)
                     }
                     .buttonStyle(.plain)
                     .help("Start new chat")
@@ -108,7 +113,7 @@ struct ChatView: View {
                     Button(action: { dismiss() }) {
                         Image(systemName: "xmark")
                             .font(.system(size: 14, weight: .medium))
-                            .foregroundColor(.white.opacity(0.6))
+                            .foregroundColor(themeColors.tertiaryText)
                     }
                     .buttonStyle(.plain)
                     .padding(.leading, 8)
@@ -117,7 +122,7 @@ struct ChatView: View {
                 .padding(.vertical, 16)
 
                 Divider()
-                    .background(Color.white.opacity(0.1))
+                    .background(themeColors.divider)
 
                 // Messages
                 ScrollViewReader { proxy in
@@ -200,7 +205,7 @@ struct ChatView: View {
                 }
 
                 Divider()
-                    .background(Color.white.opacity(0.1))
+                    .background(themeColors.divider)
 
                 // Input
                 HStack(spacing: 12) {
@@ -209,13 +214,13 @@ struct ChatView: View {
                         .padding(14)
                         .background(
                             RoundedRectangle(cornerRadius: 12)
-                                .fill(Color.white.opacity(0.06))
+                                .fill(themeColors.inputBackground)
                                 .overlay(
                                     RoundedRectangle(cornerRadius: 12)
-                                        .stroke(Color.white.opacity(0.1), lineWidth: 1)
+                                        .stroke(themeColors.divider, lineWidth: 1)
                                 )
                         )
-                        .foregroundColor(.white)
+                        .foregroundColor(themeColors.primaryText)
                         .onSubmit {
                             if !inputText.isEmpty && !isSearching && !isThinking {
                                 sendMessage(inputText)
@@ -225,11 +230,11 @@ struct ChatView: View {
                     Button(action: { sendMessage(inputText) }) {
                         Image(systemName: "paperplane.fill")
                             .font(.system(size: 16))
-                            .foregroundColor(inputText.isEmpty ? .white.opacity(0.3) : .white)
+                            .foregroundColor(inputText.isEmpty ? themeColors.mutedText : .white)
                             .frame(width: 44, height: 44)
                             .background(
                                 RoundedRectangle(cornerRadius: 12)
-                                    .fill(inputText.isEmpty ? Color.white.opacity(0.1) : Color.cyan.opacity(0.8))
+                                    .fill(inputText.isEmpty ? themeColors.hoverBackground : Color.cyan.opacity(0.8))
                             )
                     }
                     .buttonStyle(.plain)
@@ -239,7 +244,7 @@ struct ChatView: View {
             }
         }
         .frame(width: 650, height: 750)
-        .background(Color(red: 0.08, green: 0.08, blue: 0.1))
+        .background(themeColors.background)
         .clipShape(RoundedRectangle(cornerRadius: 16))
         .onAppear {
             // Defer loading so sheet animation completes smoothly
@@ -427,7 +432,12 @@ struct ChatView: View {
 // MARK: - Welcome View
 
 struct WelcomeView: View {
+    @Environment(\.colorScheme) var colorScheme
     let onQuestionTap: (String) -> Void
+
+    private var themeColors: ThemeColors {
+        ThemeColors(colorScheme: colorScheme)
+    }
 
     let suggestedQuestions = [
         "What are the main topics in my bookmarks?",
@@ -440,7 +450,7 @@ struct WelcomeView: View {
         VStack(spacing: 20) {
             Text("Ask anything about your bookmarks")
                 .font(.system(size: 15))
-                .foregroundColor(.white.opacity(0.5))
+                .foregroundColor(themeColors.tertiaryText)
                 .padding(.top, 40)
 
             VStack(spacing: 10) {
@@ -472,12 +482,17 @@ struct WelcomeView: View {
 // MARK: - Searching State View
 
 struct SearchingStateView: View {
+    @Environment(\.colorScheme) var colorScheme
     let isParsing: Bool
     let isSearching: Bool
     let isThinking: Bool
     let foundCount: Int
     let sources: [Bookmark]
     let keywords: [String]
+
+    private var themeColors: ThemeColors {
+        ThemeColors(colorScheme: colorScheme)
+    }
 
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
@@ -496,7 +511,7 @@ struct SearchingStateView: View {
                 VStack(alignment: .leading, spacing: 2) {
                     Text("Understanding query")
                         .font(.system(size: 14, weight: .medium))
-                        .foregroundColor(.white)
+                        .foregroundColor(themeColors.primaryText)
 
                     if !isParsing && !keywords.isEmpty {
                         Text("Keywords: \(keywords.joined(separator: ", "))")
@@ -511,7 +526,7 @@ struct SearchingStateView: View {
             .padding(14)
             .background(
                 RoundedRectangle(cornerRadius: 12)
-                    .fill(Color.white.opacity(0.08))
+                    .fill(themeColors.inputBackground)
             )
 
             // Phase 2: Search status card
@@ -530,12 +545,12 @@ struct SearchingStateView: View {
                     VStack(alignment: .leading, spacing: 2) {
                         Text("Searching bookmarks")
                             .font(.system(size: 14, weight: .medium))
-                            .foregroundColor(.white)
+                            .foregroundColor(themeColors.primaryText)
 
                         if !isSearching {
                             Text("Found \(foundCount) tweets")
                                 .font(.system(size: 12))
-                                .foregroundColor(.white.opacity(0.5))
+                                .foregroundColor(themeColors.tertiaryText)
                         }
                     }
 
@@ -544,13 +559,13 @@ struct SearchingStateView: View {
                     if !isSearching && !sources.isEmpty {
                         Image(systemName: "chevron.right")
                             .font(.system(size: 12))
-                            .foregroundColor(.white.opacity(0.3))
+                            .foregroundColor(themeColors.mutedText)
                     }
                 }
                 .padding(14)
                 .background(
                     RoundedRectangle(cornerRadius: 12)
-                        .fill(Color.white.opacity(0.08))
+                        .fill(themeColors.inputBackground)
                 )
 
                 // Source avatars preview
@@ -558,7 +573,7 @@ struct SearchingStateView: View {
                     HStack(spacing: 8) {
                         Text("Source:")
                             .font(.system(size: 12))
-                            .foregroundColor(.white.opacity(0.5))
+                            .foregroundColor(themeColors.tertiaryText)
 
                         // Stacked avatars
                         HStack(spacing: -8) {
@@ -573,21 +588,21 @@ struct SearchingStateView: View {
                                 }
                                 .frame(width: 24, height: 24)
                                 .clipShape(Circle())
-                                .overlay(Circle().stroke(Color(red: 0.08, green: 0.08, blue: 0.1), lineWidth: 2))
+                                .overlay(Circle().stroke(themeColors.background, lineWidth: 2))
                             }
 
                             if sources.count > 5 {
                                 Text("+\(sources.count - 5)")
                                     .font(.system(size: 10, weight: .semibold))
-                                    .foregroundColor(.white)
+                                    .foregroundColor(themeColors.primaryText)
                                     .frame(width: 24, height: 24)
-                                    .background(Circle().fill(Color.white.opacity(0.2)))
+                                    .background(Circle().fill(themeColors.hoverBackground))
                             }
                         }
 
                         Text("\(sources.count) tweets")
                             .font(.system(size: 12))
-                            .foregroundColor(.white.opacity(0.5))
+                            .foregroundColor(themeColors.tertiaryText)
                     }
                     .padding(.leading, 14)
                 }
@@ -602,13 +617,13 @@ struct SearchingStateView: View {
 
                     Text("Generating answer...")
                         .font(.system(size: 13))
-                        .foregroundColor(.white.opacity(0.6))
+                        .foregroundColor(themeColors.tertiaryText)
                 }
                 .padding(.horizontal, 14)
                 .padding(.vertical, 10)
                 .background(
                     RoundedRectangle(cornerRadius: 20)
-                        .fill(Color.white.opacity(0.08))
+                        .fill(themeColors.inputBackground)
                 )
             }
         }
@@ -620,10 +635,15 @@ struct SearchingStateView: View {
 // MARK: - Streaming Message View
 
 struct StreamingMessageView: View {
+    @Environment(\.colorScheme) var colorScheme
     let text: String
     let sources: [Bookmark]
 
     @State private var cursorVisible = true
+
+    private var themeColors: ThemeColors {
+        ThemeColors(colorScheme: colorScheme)
+    }
 
     // Clean up raw formatting for display during streaming
     private var displayText: String {
@@ -668,7 +688,7 @@ struct StreamingMessageView: View {
         HStack(alignment: .bottom, spacing: 2) {
             Text(displayText)
                 .font(.system(size: 14))
-                .foregroundColor(.white.opacity(0.9))
+                .foregroundColor(themeColors.primaryText.opacity(0.9))
                 .lineSpacing(4)
                 .textSelection(.enabled)
                 .animation(.none, value: displayText) // Disable text animation
@@ -692,12 +712,17 @@ struct StreamingMessageView: View {
 // MARK: - Chat Message View
 
 struct ChatMessageView: View {
+    @Environment(\.colorScheme) var colorScheme
     @EnvironmentObject var dbManager: DatabaseManager
     let message: ChatView.ChatMessageItem
     let onShowSources: () -> Void
     let onFollowUpTap: (String) -> Void
     let onAddToFolder: (String) -> Void
     let onAddTag: (String) -> Void
+
+    private var themeColors: ThemeColors {
+        ThemeColors(colorScheme: colorScheme)
+    }
 
     var isUser: Bool {
         message.role == "user"
@@ -736,7 +761,7 @@ struct ChatMessageView: View {
                             HStack(spacing: 10) {
                                 Text("Source:")
                                     .font(.system(size: 12))
-                                    .foregroundColor(.white.opacity(0.5))
+                                    .foregroundColor(themeColors.tertiaryText)
 
                                 // Stacked avatars
                                 HStack(spacing: -6) {
@@ -751,32 +776,32 @@ struct ChatMessageView: View {
                                         }
                                         .frame(width: 22, height: 22)
                                         .clipShape(Circle())
-                                        .overlay(Circle().stroke(Color(red: 0.08, green: 0.08, blue: 0.1), lineWidth: 2))
+                                        .overlay(Circle().stroke(themeColors.background, lineWidth: 2))
                                     }
 
                                     if message.sources.count > 4 {
                                         Text("+\(message.sources.count - 4)")
                                             .font(.system(size: 9, weight: .semibold))
-                                            .foregroundColor(.white)
+                                            .foregroundColor(themeColors.primaryText)
                                             .frame(width: 22, height: 22)
-                                            .background(Circle().fill(Color.white.opacity(0.2)))
+                                            .background(Circle().fill(themeColors.hoverBackground))
                                     }
                                 }
 
                                 Text("\(message.sources.count) tweets")
                                     .font(.system(size: 12))
-                                    .foregroundColor(.white.opacity(0.5))
+                                    .foregroundColor(themeColors.tertiaryText)
 
                                 Spacer()
 
                                 Image(systemName: "chevron.right")
                                     .font(.system(size: 10))
-                                    .foregroundColor(.white.opacity(0.3))
+                                    .foregroundColor(themeColors.mutedText)
                             }
                             .padding(12)
                             .background(
                                 RoundedRectangle(cornerRadius: 10)
-                                    .fill(Color.white.opacity(0.05))
+                                    .fill(themeColors.hoverBackground)
                             )
                         }
                         .buttonStyle(.plain)
@@ -810,14 +835,19 @@ struct ChatMessageView: View {
 // MARK: - Follow-up Questions View
 
 struct FollowUpQuestionsView: View {
+    @Environment(\.colorScheme) var colorScheme
     let questions: [String]
     let onTap: (String) -> Void
+
+    private var themeColors: ThemeColors {
+        ThemeColors(colorScheme: colorScheme)
+    }
 
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
             Text("Follow-up questions")
                 .font(.system(size: 11, weight: .medium))
-                .foregroundColor(.white.opacity(0.4))
+                .foregroundColor(themeColors.mutedText)
                 .textCase(.uppercase)
                 .tracking(0.5)
 
@@ -892,6 +922,7 @@ struct ChatFlowLayout: Layout {
 // MARK: - Quick Actions Bar
 
 struct QuickActionsBar: View {
+    @Environment(\.colorScheme) var colorScheme
     @EnvironmentObject var dbManager: DatabaseManager
     let sources: [Bookmark]
     let responseText: String
@@ -899,6 +930,10 @@ struct QuickActionsBar: View {
     let onAddTag: (String) -> Void
 
     @State private var showCopiedFeedback = false
+
+    private var themeColors: ThemeColors {
+        ThemeColors(colorScheme: colorScheme)
+    }
 
     var body: some View {
         HStack(spacing: 16) {
@@ -912,7 +947,7 @@ struct QuickActionsBar: View {
             } label: {
                 Label("Add to Folder", systemImage: "folder.badge.plus")
                     .font(.system(size: 11, weight: .medium))
-                    .foregroundColor(.white.opacity(0.6))
+                    .foregroundColor(themeColors.tertiaryText)
             }
             .menuStyle(.borderlessButton)
             .fixedSize()
@@ -927,7 +962,7 @@ struct QuickActionsBar: View {
             } label: {
                 Label("Tag", systemImage: "tag")
                     .font(.system(size: 11, weight: .medium))
-                    .foregroundColor(.white.opacity(0.6))
+                    .foregroundColor(themeColors.tertiaryText)
             }
             .menuStyle(.borderlessButton)
             .fixedSize()
@@ -943,7 +978,7 @@ struct QuickActionsBar: View {
             }) {
                 Label(showCopiedFeedback ? "Copied!" : "Copy", systemImage: showCopiedFeedback ? "checkmark" : "doc.on.doc")
                     .font(.system(size: 11, weight: .medium))
-                    .foregroundColor(showCopiedFeedback ? .green : .white.opacity(0.6))
+                    .foregroundColor(showCopiedFeedback ? .green : themeColors.tertiaryText)
             }
             .buttonStyle(.plain)
 
@@ -953,7 +988,7 @@ struct QuickActionsBar: View {
         .padding(.horizontal, 12)
         .background(
             RoundedRectangle(cornerRadius: 8)
-                .fill(Color.white.opacity(0.03))
+                .fill(themeColors.hoverBackground.opacity(0.5))
         )
     }
 }
@@ -961,8 +996,13 @@ struct QuickActionsBar: View {
 // MARK: - Formatted Response View
 
 struct FormattedResponseView: View {
+    @Environment(\.colorScheme) var colorScheme
     let content: String
     let sources: [Bookmark]
+
+    private var themeColors: ThemeColors {
+        ThemeColors(colorScheme: colorScheme)
+    }
 
     // Parse content into segments (text and inline tweets)
     var segments: [ResponseSegment] {
@@ -976,7 +1016,7 @@ struct FormattedResponseView: View {
                 case .text(let text):
                     Text(attributedContent(for: text))
                         .font(.system(size: 14))
-                        .foregroundColor(.white.opacity(0.9))
+                        .foregroundColor(themeColors.primaryText.opacity(0.9))
                         .textSelection(.enabled)
                         .lineSpacing(4)
                 case .inlineTweet(let bookmarkId, _):
@@ -1099,7 +1139,12 @@ struct FormattedResponseView: View {
 // MARK: - Inline Tweet Preview
 
 struct InlineTweetPreview: View {
+    @Environment(\.colorScheme) var colorScheme
     let bookmark: Bookmark
+
+    private var themeColors: ThemeColors {
+        ThemeColors(colorScheme: colorScheme)
+    }
 
     private var formattedDate: String {
         let formatter = DateFormatter()
@@ -1137,17 +1182,17 @@ struct InlineTweetPreview: View {
                         .foregroundColor(.cyan)
 
                     Text("·")
-                        .foregroundColor(.white.opacity(0.4))
+                        .foregroundColor(themeColors.mutedText)
 
                     Text(formattedDate)
                         .font(.system(size: 11))
-                        .foregroundColor(.white.opacity(0.4))
+                        .foregroundColor(themeColors.mutedText)
                 }
 
                 // Truncated content
                 Text("\"\(truncatedContent)\"")
                     .font(.system(size: 12))
-                    .foregroundColor(.white.opacity(0.7))
+                    .foregroundColor(themeColors.secondaryText)
                     .lineLimit(2)
             }
 
@@ -1161,16 +1206,16 @@ struct InlineTweetPreview: View {
             }) {
                 Image(systemName: "arrow.up.right")
                     .font(.system(size: 10, weight: .medium))
-                    .foregroundColor(.white.opacity(0.5))
+                    .foregroundColor(themeColors.tertiaryText)
                     .frame(width: 24, height: 24)
-                    .background(Circle().fill(Color.white.opacity(0.1)))
+                    .background(Circle().fill(themeColors.hoverBackground))
             }
             .buttonStyle(.plain)
         }
         .padding(10)
         .background(
             RoundedRectangle(cornerRadius: 10)
-                .fill(Color.white.opacity(0.05))
+                .fill(themeColors.hoverBackground)
                 .overlay(
                     RoundedRectangle(cornerRadius: 10)
                         .stroke(Color.cyan.opacity(0.2), lineWidth: 1)
@@ -1183,8 +1228,13 @@ struct InlineTweetPreview: View {
 // MARK: - Referenced Tweets Modal
 
 struct ReferencedTweetsModal: View {
+    @Environment(\.colorScheme) var colorScheme
     let sources: [Bookmark]
     @Environment(\.dismiss) var dismiss
+
+    private var themeColors: ThemeColors {
+        ThemeColors(colorScheme: colorScheme)
+    }
 
     var body: some View {
         VStack(spacing: 0) {
@@ -1192,21 +1242,21 @@ struct ReferencedTweetsModal: View {
             HStack {
                 Text("Results (\(sources.count))")
                     .font(.system(size: 18, weight: .semibold))
-                    .foregroundColor(.white)
+                    .foregroundColor(themeColors.primaryText)
 
                 Spacer()
 
                 Button(action: { dismiss() }) {
                     Image(systemName: "xmark")
                         .font(.system(size: 14, weight: .medium))
-                        .foregroundColor(.white.opacity(0.6))
+                        .foregroundColor(themeColors.tertiaryText)
                 }
                 .buttonStyle(.plain)
             }
             .padding(20)
 
             Divider()
-                .background(Color.white.opacity(0.1))
+                .background(themeColors.divider)
 
             // Tweet cards
             ScrollView {
@@ -1219,14 +1269,19 @@ struct ReferencedTweetsModal: View {
             }
         }
         .frame(width: 450, height: 550)
-        .background(Color(red: 0.1, green: 0.1, blue: 0.12))
+        .background(themeColors.background)
     }
 }
 
 // MARK: - Tweet Card
 
 struct TweetCard: View {
+    @Environment(\.colorScheme) var colorScheme
     let bookmark: Bookmark
+
+    private var themeColors: ThemeColors {
+        ThemeColors(colorScheme: colorScheme)
+    }
 
     private var formattedDate: String {
         let formatter = DateFormatter()
@@ -1253,7 +1308,7 @@ struct TweetCard: View {
                     HStack(spacing: 4) {
                         Text(bookmark.authorName)
                             .font(.system(size: 14, weight: .semibold))
-                            .foregroundColor(.white)
+                            .foregroundColor(themeColors.primaryText)
 
                         Image(systemName: "checkmark.seal.fill")
                             .font(.system(size: 12))
@@ -1262,7 +1317,7 @@ struct TweetCard: View {
 
                     Text("@\(bookmark.authorHandle)")
                         .font(.system(size: 13))
-                        .foregroundColor(.white.opacity(0.5))
+                        .foregroundColor(themeColors.tertiaryText)
                 }
 
                 Spacer()
@@ -1270,19 +1325,19 @@ struct TweetCard: View {
                 // X logo
                 Text("𝕏")
                     .font(.system(size: 18, weight: .bold))
-                    .foregroundColor(.white.opacity(0.6))
+                    .foregroundColor(themeColors.tertiaryText)
             }
 
             // Content
             Text(bookmark.content)
                 .font(.system(size: 14))
-                .foregroundColor(.white.opacity(0.9))
+                .foregroundColor(themeColors.primaryText.opacity(0.9))
                 .lineSpacing(4)
 
             // Date
             Text(formattedDate)
                 .font(.system(size: 12))
-                .foregroundColor(.white.opacity(0.4))
+                .foregroundColor(themeColors.mutedText)
 
             // Open button
             Button(action: {
@@ -1303,10 +1358,10 @@ struct TweetCard: View {
         .padding(16)
         .background(
             RoundedRectangle(cornerRadius: 14)
-                .fill(Color.white.opacity(0.05))
+                .fill(themeColors.cardBackground)
                 .overlay(
                     RoundedRectangle(cornerRadius: 14)
-                        .stroke(Color.white.opacity(0.1), lineWidth: 1)
+                        .stroke(themeColors.cardBorder, lineWidth: 1)
                 )
         )
     }

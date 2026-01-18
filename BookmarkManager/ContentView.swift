@@ -3,11 +3,14 @@ import SwiftUI
 struct ContentView: View {
     @EnvironmentObject var appState: AppState
     @StateObject private var dbManager = DatabaseManager.shared
+    @Environment(\.colorScheme) var colorScheme
 
     var body: some View {
+        let themeColors = ThemeColors(colorScheme: colorScheme)
+
         ZStack {
-            // Dark background
-            Color.background
+            // Dynamic background
+            themeColors.background
                 .ignoresSafeArea()
 
             HSplitView {
@@ -21,7 +24,8 @@ struct ContentView: View {
             }
             .clipped()
         }
-        .preferredColorScheme(.dark)
+        .environment(\.themeColors, themeColors)
+        .preferredColorScheme(appState.preferredColorScheme)
         .environmentObject(dbManager)
         .alert("Import Complete", isPresented: $appState.showImportSuccess) {
             Button("OK", role: .cancel) {}
@@ -44,8 +48,13 @@ struct ContentView: View {
 struct MainContentView: View {
     @EnvironmentObject var appState: AppState
     @EnvironmentObject var dbManager: DatabaseManager
+    @Environment(\.colorScheme) var colorScheme
     @State private var bookmarks: [Bookmark] = []
     @State private var isLoading = false
+
+    private var themeColors: ThemeColors {
+        ThemeColors(colorScheme: colorScheme)
+    }
 
     var title: String {
         switch appState.selectedSection {
@@ -93,12 +102,12 @@ struct MainContentView: View {
                     VStack(alignment: .leading, spacing: 4) {
                         Text(title)
                             .font(.system(size: 28, weight: .bold))
-                            .foregroundColor(.white)
+                            .foregroundColor(themeColors.primaryText)
 
                         HStack(spacing: 8) {
                             Text("\(bookmarks.count) bookmarks")
                                 .font(.system(size: 13))
-                                .foregroundColor(.white.opacity(0.5))
+                                .foregroundColor(themeColors.tertiaryText)
 
                             if appState.isSelectionMode && !appState.selectedBookmarkIds.isEmpty {
                                 Text("• \(appState.selectedBookmarkIds.count) selected")
@@ -135,10 +144,10 @@ struct MainContentView: View {
                                     Text("Move")
                                 }
                                 .font(.system(size: 12, weight: .medium))
-                                .foregroundColor(.white.opacity(0.8))
+                                .foregroundColor(themeColors.secondaryText)
                                 .padding(.horizontal, 12)
                                 .padding(.vertical, 6)
-                                .background(RoundedRectangle(cornerRadius: 6).fill(Color.white.opacity(0.1)))
+                                .background(RoundedRectangle(cornerRadius: 6).fill(themeColors.hoverBackground))
                             }
                             .menuStyle(.borderlessButton)
 
@@ -160,10 +169,10 @@ struct MainContentView: View {
                                     Text("Tag")
                                 }
                                 .font(.system(size: 12, weight: .medium))
-                                .foregroundColor(.white.opacity(0.8))
+                                .foregroundColor(themeColors.secondaryText)
                                 .padding(.horizontal, 12)
                                 .padding(.vertical, 6)
-                                .background(RoundedRectangle(cornerRadius: 6).fill(Color.white.opacity(0.1)))
+                                .background(RoundedRectangle(cornerRadius: 6).fill(themeColors.hoverBackground))
                             }
                             .menuStyle(.borderlessButton)
 
@@ -206,10 +215,10 @@ struct MainContentView: View {
                             Text(appState.sortOrder.rawValue)
                         }
                         .font(.system(size: 12))
-                        .foregroundColor(.white.opacity(0.6))
+                        .foregroundColor(themeColors.tertiaryText)
                         .padding(.horizontal, 10)
                         .padding(.vertical, 6)
-                        .background(RoundedRectangle(cornerRadius: 6).fill(Color.white.opacity(0.05)))
+                        .background(RoundedRectangle(cornerRadius: 6).fill(themeColors.hoverBackground))
                     }
                     .menuStyle(.borderlessButton)
 
@@ -222,7 +231,7 @@ struct MainContentView: View {
                     } label: {
                         Image(systemName: appState.isSelectionMode ? "checkmark.circle.fill" : "checkmark.circle")
                             .font(.system(size: 16))
-                            .foregroundColor(appState.isSelectionMode ? accentColor : .white.opacity(0.5))
+                            .foregroundColor(appState.isSelectionMode ? accentColor : themeColors.tertiaryText)
                             .frame(width: 32, height: 28)
                             .background(
                                 RoundedRectangle(cornerRadius: 6)
@@ -231,6 +240,34 @@ struct MainContentView: View {
                     }
                     .buttonStyle(.plain)
                     .help("Toggle selection mode")
+
+                    // Theme picker
+                    Menu {
+                        ForEach(AppTheme.allCases, id: \.self) { theme in
+                            Button {
+                                appState.theme = theme
+                            } label: {
+                                HStack {
+                                    Image(systemName: theme.icon)
+                                    Text(theme.rawValue)
+                                    if appState.theme == theme {
+                                        Image(systemName: "checkmark")
+                                    }
+                                }
+                            }
+                        }
+                    } label: {
+                        Image(systemName: appState.theme.icon)
+                            .font(.system(size: 16))
+                            .foregroundColor(themeColors.tertiaryText)
+                            .frame(width: 32, height: 28)
+                            .background(
+                                RoundedRectangle(cornerRadius: 6)
+                                    .fill(themeColors.hoverBackground)
+                            )
+                    }
+                    .menuStyle(.borderlessButton)
+                    .help("Change theme")
                 }
                 .padding(.horizontal, 24)
                 .padding(.bottom, 16)
@@ -241,7 +278,7 @@ struct MainContentView: View {
                     .padding(.bottom, 16)
             }
             .background(
-                Color.sidebarBackground.opacity(0.5)
+                themeColors.sidebarBackground.opacity(0.5)
                     .background(.ultraThinMaterial)
             )
 
@@ -259,7 +296,7 @@ struct MainContentView: View {
                 }
             }
             .clipped()
-            .background(Color.background)
+            .background(themeColors.background)
         }
         .onAppear {
             loadBookmarks()
@@ -449,9 +486,12 @@ struct MainContentView: View {
 }
 
 struct EmptyStateView: View {
+    @Environment(\.colorScheme) var colorScheme
     let accentColor: Color
 
     var body: some View {
+        let themeColors = ThemeColors(colorScheme: colorScheme)
+
         VStack(spacing: 16) {
             Image(systemName: "bookmark.slash")
                 .font(.system(size: 48))
@@ -459,11 +499,11 @@ struct EmptyStateView: View {
 
             Text("No bookmarks found")
                 .font(.system(size: 18, weight: .medium))
-                .foregroundColor(.white.opacity(0.7))
+                .foregroundColor(themeColors.secondaryText)
 
             Text("Try adjusting your search or filters")
                 .font(.system(size: 14))
-                .foregroundColor(.white.opacity(0.4))
+                .foregroundColor(themeColors.mutedText)
         }
         .frame(maxWidth: .infinity, minHeight: 300)
     }

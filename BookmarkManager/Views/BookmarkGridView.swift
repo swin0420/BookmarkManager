@@ -46,6 +46,7 @@ struct BookmarkGridView: View {
 }
 
 struct BookmarkCardView: View {
+    @Environment(\.colorScheme) var colorScheme
     let bookmark: Bookmark
     let accentColor: Color
 
@@ -58,6 +59,10 @@ struct BookmarkCardView: View {
     @State private var tagSuggestions: [AIService.TagSuggestion] = []
     @State private var isLoadingTags = false
     @State private var localSummary: String?
+
+    private var themeColors: ThemeColors {
+        ThemeColors(colorScheme: colorScheme)
+    }
 
     var isSelected: Bool {
         appState.selectedBookmarkIds.contains(bookmark.id)
@@ -98,12 +103,12 @@ struct BookmarkCardView: View {
                 VStack(alignment: .leading, spacing: 1) {
                     Text(bookmark.authorName)
                         .font(.system(size: 13, weight: .semibold))
-                        .foregroundColor(.white)
+                        .foregroundColor(themeColors.primaryText)
                         .lineLimit(1)
 
                     Text("@\(bookmark.authorHandle)")
                         .font(.system(size: 11))
-                        .foregroundColor(.white.opacity(0.5))
+                        .foregroundColor(themeColors.tertiaryText)
                         .lineLimit(1)
                 }
 
@@ -127,7 +132,7 @@ struct BookmarkCardView: View {
                     } label: {
                         Image(systemName: isSelected ? "checkmark.circle.fill" : "circle")
                             .font(.system(size: 20))
-                            .foregroundColor(isSelected ? accentColor : .white.opacity(0.5))
+                            .foregroundColor(isSelected ? accentColor : themeColors.tertiaryText)
                     }
                     .buttonStyle(.plain)
                 }
@@ -137,7 +142,7 @@ struct BookmarkCardView: View {
             VStack(alignment: .leading, spacing: 4) {
                 Text(bookmark.content)
                     .font(.system(size: 13))
-                    .foregroundColor(.white.opacity(0.9))
+                    .foregroundColor(themeColors.primaryText.opacity(0.9))
                     .lineLimit(bookmark.mediaUrls.isEmpty ? 15 : 6)
                     .multilineTextAlignment(.leading)
 
@@ -200,7 +205,7 @@ struct BookmarkCardView: View {
             HStack {
                 Text(formatDate(bookmark.postedAt))
                     .font(.system(size: 11))
-                    .foregroundColor(.white.opacity(0.4))
+                    .foregroundColor(themeColors.mutedText)
 
                 Spacer()
 
@@ -215,7 +220,7 @@ struct BookmarkCardView: View {
                         } else {
                             Image(systemName: "sparkles")
                                 .font(.system(size: 13))
-                                .foregroundColor(bookmark.summary != nil ? .purple : .white.opacity(0.4))
+                                .foregroundColor(bookmark.summary != nil ? .purple : themeColors.mutedText)
                         }
                     }
                     .buttonStyle(.plain)
@@ -251,7 +256,7 @@ struct BookmarkCardView: View {
                     } label: {
                         Image(systemName: "tag")
                             .font(.system(size: 13))
-                            .foregroundColor(.white.opacity(0.4))
+                            .foregroundColor(themeColors.mutedText)
                     }
                     .menuStyle(.borderlessButton)
                     .help("AI tag suggestions")
@@ -259,7 +264,7 @@ struct BookmarkCardView: View {
                     Button(action: { dbManager.toggleFavorite(bookmark.id) }) {
                         Image(systemName: bookmark.isFavorite ? "star.fill" : "star")
                             .font(.system(size: 13))
-                            .foregroundColor(bookmark.isFavorite ? .yellow : .white.opacity(0.4))
+                            .foregroundColor(bookmark.isFavorite ? .yellow : themeColors.mutedText)
                     }
                     .buttonStyle(.plain)
 
@@ -282,7 +287,7 @@ struct BookmarkCardView: View {
                     } label: {
                         Image(systemName: "folder")
                             .font(.system(size: 13))
-                            .foregroundColor(.white.opacity(0.4))
+                            .foregroundColor(themeColors.mutedText)
                     }
                     .menuStyle(.borderlessButton)
 
@@ -293,14 +298,14 @@ struct BookmarkCardView: View {
                     }) {
                         Image(systemName: "arrow.up.right.square")
                             .font(.system(size: 13))
-                            .foregroundColor(.white.opacity(0.4))
+                            .foregroundColor(themeColors.mutedText)
                     }
                     .buttonStyle(.plain)
 
                     Button(action: { showDetailSheet = true }) {
                         Image(systemName: "arrow.up.left.and.arrow.down.right")
                             .font(.system(size: 13))
-                            .foregroundColor(.white.opacity(0.4))
+                            .foregroundColor(themeColors.mutedText)
                     }
                     .buttonStyle(.plain)
                 }
@@ -317,6 +322,26 @@ struct BookmarkCardView: View {
             withAnimation(.easeInOut(duration: 0.2)) {
                 isHovered = hovering
             }
+        }
+        .draggable(bookmark.id) {
+            // Drag preview
+            HStack(spacing: 8) {
+                Image(systemName: "bookmark.fill")
+                    .foregroundColor(accentColor)
+                Text(bookmark.authorName)
+                    .font(.system(size: 12, weight: .medium))
+                    .lineLimit(1)
+            }
+            .padding(.horizontal, 12)
+            .padding(.vertical, 8)
+            .background(
+                RoundedRectangle(cornerRadius: 8)
+                    .fill(themeColors.cardBackground)
+            )
+            .overlay(
+                RoundedRectangle(cornerRadius: 8)
+                    .stroke(accentColor.opacity(0.5), lineWidth: 1)
+            )
         }
         .sheet(isPresented: $showDetailSheet) {
             BookmarkDetailSheet(bookmark: bookmark, accentColor: accentColor, overrideSummary: localSummary)
@@ -406,11 +431,16 @@ struct BookmarkCardView: View {
 
 // MARK: - Bookmark Detail Sheet
 struct BookmarkDetailSheet: View {
+    @Environment(\.colorScheme) var colorScheme
     let bookmark: Bookmark
     let accentColor: Color
     var overrideSummary: String? = nil
     @Environment(\.dismiss) private var dismiss
     @EnvironmentObject var dbManager: DatabaseManager
+
+    private var themeColors: ThemeColors {
+        ThemeColors(colorScheme: colorScheme)
+    }
 
     private var displaySummary: String? {
         overrideSummary ?? bookmark.summary
@@ -432,7 +462,7 @@ struct BookmarkDetailSheet: View {
                             .overlay(
                                 Text(String(bookmark.authorName.prefix(1)).uppercased())
                                     .font(.system(size: 14, weight: .semibold))
-                                    .foregroundColor(.white)
+                                    .foregroundColor(themeColors.primaryText)
                             )
                     }
                     .frame(width: 36, height: 36)
@@ -441,10 +471,10 @@ struct BookmarkDetailSheet: View {
                     VStack(alignment: .leading, spacing: 2) {
                         Text(bookmark.authorName)
                             .font(.system(size: 14, weight: .semibold))
-                            .foregroundColor(.white)
+                            .foregroundColor(themeColors.primaryText)
                         Text("@\(bookmark.authorHandle)")
                             .font(.system(size: 12))
-                            .foregroundColor(.white.opacity(0.5))
+                            .foregroundColor(themeColors.tertiaryText)
                     }
                 }
 
@@ -452,18 +482,18 @@ struct BookmarkDetailSheet: View {
 
                 Text(formatFullDate(bookmark.postedAt))
                     .font(.system(size: 11))
-                    .foregroundColor(.white.opacity(0.4))
+                    .foregroundColor(themeColors.mutedText)
 
                 Button(action: { dismiss() }) {
                     Image(systemName: "xmark.circle.fill")
                         .font(.system(size: 24))
-                        .foregroundStyle(.white.opacity(0.7), Color.white.opacity(0.1))
+                        .foregroundStyle(themeColors.secondaryText, themeColors.hoverBackground)
                 }
                 .buttonStyle(.plain)
                 .padding(.leading, 12)
             }
             .padding(16)
-            .background(Color.black.opacity(0.3))
+            .background(themeColors.sidebarBackground.opacity(0.8))
 
             // Scrollable content
             ScrollView(.vertical, showsIndicators: true) {
@@ -471,7 +501,7 @@ struct BookmarkDetailSheet: View {
                     // Full content / Caption
                     Text(bookmark.content)
                         .font(.system(size: 15))
-                        .foregroundColor(.white)
+                        .foregroundColor(themeColors.primaryText)
                         .lineSpacing(6)
                         .textSelection(.enabled)
                         .frame(maxWidth: .infinity, alignment: .leading)
@@ -511,7 +541,7 @@ struct BookmarkDetailSheet: View {
                                         .frame(maxWidth: .infinity)
                                 } placeholder: {
                                     RoundedRectangle(cornerRadius: 12)
-                                        .fill(Color.white.opacity(0.1))
+                                        .fill(themeColors.hoverBackground)
                                         .frame(height: 200)
                                         .overlay(ProgressView())
                                 }
@@ -530,7 +560,7 @@ struct BookmarkDetailSheet: View {
                                         Text(tag.name)
                                             .font(.system(size: 12))
                                     }
-                                    .foregroundColor(.white.opacity(0.8))
+                                    .foregroundColor(themeColors.secondaryText)
                                     .padding(.horizontal, 10)
                                     .padding(.vertical, 5)
                                     .background(Capsule().fill(tag.color.opacity(0.2)))
@@ -556,13 +586,13 @@ struct BookmarkDetailSheet: View {
                 .foregroundColor(.white)
                 .frame(maxWidth: .infinity)
                 .padding(.vertical, 14)
-                .background(Color.appAccent)
+                .background(themeColors.accent)
             }
             .buttonStyle(.plain)
             .padding(16)
         }
         .frame(width: 500, height: 600)
-        .background(Color.background)
+        .background(themeColors.background)
     }
 
     private func formatFullDate(_ date: Date) -> String {
@@ -621,8 +651,13 @@ struct FlowLayout: Layout {
 
 // MARK: - Compact Media Grid for Cards
 struct MediaGridViewCompact: View {
+    @Environment(\.colorScheme) var colorScheme
     let mediaUrls: [String]
     let onTap: (Int) -> Void
+
+    private var placeholderColor: Color {
+        colorScheme == .dark ? Color.white.opacity(0.1) : Color.black.opacity(0.05)
+    }
 
     var body: some View {
         let count = mediaUrls.count
@@ -635,7 +670,7 @@ struct MediaGridViewCompact: View {
                         .aspectRatio(contentMode: .fit)
                 } placeholder: {
                     Rectangle()
-                        .fill(Color.white.opacity(0.1))
+                        .fill(placeholderColor)
                 }
                 .frame(maxWidth: .infinity)
                 .frame(height: 180)
@@ -651,7 +686,7 @@ struct MediaGridViewCompact: View {
                                 .aspectRatio(contentMode: .fit)
                         } placeholder: {
                             Rectangle()
-                                .fill(Color.white.opacity(0.1))
+                                .fill(placeholderColor)
                         }
                         .frame(maxWidth: .infinity)
                         .frame(height: 140)
@@ -668,7 +703,7 @@ struct MediaGridViewCompact: View {
                             .aspectRatio(contentMode: .fit)
                     } placeholder: {
                         Rectangle()
-                            .fill(Color.white.opacity(0.1))
+                            .fill(placeholderColor)
                     }
                     .frame(maxWidth: .infinity)
                     .frame(height: 120)
@@ -685,7 +720,7 @@ struct MediaGridViewCompact: View {
                                         .aspectRatio(contentMode: .fit)
                                 } placeholder: {
                                     Rectangle()
-                                        .fill(Color.white.opacity(0.1))
+                                        .fill(placeholderColor)
                                 }
                                 .frame(maxWidth: .infinity)
                                 .frame(height: 70)
@@ -711,12 +746,17 @@ struct MediaGridViewCompact: View {
 
 // MARK: - Media Viewer Sheet
 struct MediaViewerSheet: View {
+    @Environment(\.colorScheme) var colorScheme
     let mediaUrls: [String]
     var content: String = ""
     var authorName: String = ""
     var authorHandle: String = ""
     @Binding var selectedIndex: Int
     @Environment(\.dismiss) private var dismiss
+
+    private var themeColors: ThemeColors {
+        ThemeColors(colorScheme: colorScheme)
+    }
 
     var body: some View {
         HStack(spacing: 0) {
@@ -761,34 +801,34 @@ struct MediaViewerSheet: View {
                     if !authorName.isEmpty {
                         HStack(spacing: 8) {
                             Circle()
-                                .fill(Color.appAccent.opacity(0.3))
+                                .fill(themeColors.accent.opacity(0.3))
                                 .frame(width: 40, height: 40)
                                 .overlay(
                                     Text(String(authorName.prefix(1)).uppercased())
                                         .font(.system(size: 16, weight: .semibold))
-                                        .foregroundColor(.white)
+                                        .foregroundColor(themeColors.primaryText)
                                 )
 
                             VStack(alignment: .leading, spacing: 2) {
                                 Text(authorName)
                                     .font(.system(size: 14, weight: .semibold))
-                                    .foregroundColor(.white)
+                                    .foregroundColor(themeColors.primaryText)
 
                                 Text("@\(authorHandle)")
                                     .font(.system(size: 12))
-                                    .foregroundColor(.white.opacity(0.5))
+                                    .foregroundColor(themeColors.tertiaryText)
                             }
                         }
                     }
 
                     Divider()
-                        .background(Color.white.opacity(0.1))
+                        .background(themeColors.divider)
 
                     // Tweet content
                     ScrollView {
                         Text(content)
                             .font(.system(size: 14))
-                            .foregroundColor(.white.opacity(0.9))
+                            .foregroundColor(themeColors.primaryText.opacity(0.9))
                             .textSelection(.enabled)
                             .frame(maxWidth: .infinity, alignment: .leading)
                     }
@@ -801,14 +841,14 @@ struct MediaViewerSheet: View {
                             Spacer()
                             Text("\(selectedIndex + 1) / \(mediaUrls.count)")
                                 .font(.system(size: 12, weight: .medium))
-                                .foregroundColor(.white.opacity(0.5))
+                                .foregroundColor(themeColors.tertiaryText)
                             Spacer()
                         }
                     }
                 }
                 .padding(20)
                 .frame(width: 280)
-                .background(Color.sidebarBackground)
+                .background(themeColors.sidebarBackground)
             }
         }
         .frame(minWidth: 700, minHeight: 500)

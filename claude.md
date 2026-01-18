@@ -46,7 +46,34 @@ Tables: `bookmarks`, `folders`, `tags`, `bookmark_tags`, `chat_history`, `embedd
 
 ## UI
 
-Dark theme, purple/cyan gradients, glassmorphism. App icon: bookmark + sparkles.
+- **Theme**: Dark (default), Light, or System - managed via `AppTheme` enum in `AppState`
+- **ThemeColors**: Provides adaptive colors based on `colorScheme` (in `GlassmorphismStyle.swift`)
+- **Styling**: Purple/cyan gradients, glassmorphism effects
+- **App icon**: Bookmark + sparkles
+
+## Theme System
+
+```swift
+// AppState manages theme preference (persisted in UserDefaults)
+enum AppTheme: String, CaseIterable {
+    case system, light, dark
+}
+
+// ThemeColors provides adaptive colors
+struct ThemeColors {
+    let colorScheme: ColorScheme
+    var background: Color { ... }      // Dark: #0D0D12, Light: #F5F5F8
+    var cardBackground: Color { ... }  // Dark: #141418, Light: white
+    var primaryText: Color { ... }     // Dark: white, Light: near-black
+    // ... etc
+}
+```
+
+## Drag and Drop
+
+- Bookmark cards are draggable via `.draggable(bookmark.id)`
+- Folders accept drops via `.dropDestination(for: String.self)`
+- Drop on folder → moves bookmark to that folder
 
 ---
 

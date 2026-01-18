@@ -5,7 +5,9 @@ A native macOS app for managing your Twitter/X bookmarks with AI-powered search 
 ## Features
 
 ### macOS App
-- **Beautiful dark UI** with glassmorphism design
+- **Dark/Light theme** - switch between dark, light, or follow system preference
+- **Beautiful UI** with glassmorphism design
+- **Drag & drop** - drag bookmarks to folders in the sidebar
 - **Full-text search** across all bookmarks
 - **Semantic search** - find bookmarks by meaning, not just keywords
 - **Folders & Tags** - organize bookmarks with custom colors

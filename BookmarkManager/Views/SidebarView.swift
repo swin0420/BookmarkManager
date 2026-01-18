@@ -3,6 +3,7 @@ import SwiftUI
 struct SidebarView: View {
     @EnvironmentObject var appState: AppState
     @EnvironmentObject var dbManager: DatabaseManager
+    @Environment(\.colorScheme) var colorScheme
     @State private var showNewFolderSheet = false
     @State private var showNewTagSheet = false
     @State private var showClearAllConfirm = false
@@ -15,6 +16,10 @@ struct SidebarView: View {
     @State private var foldersExpanded = true
     @State private var tagsExpanded = true
     @State private var smartCollectionsExpanded = true
+
+    private var themeColors: ThemeColors {
+        ThemeColors(colorScheme: colorScheme)
+    }
 
     var body: some View {
         VStack(spacing: 0) {
@@ -29,7 +34,7 @@ struct SidebarView: View {
                     VStack(alignment: .leading, spacing: 4) {
                         Text("LIBRARY")
                             .font(.system(size: 11, weight: .semibold))
-                            .foregroundColor(.white.opacity(0.4))
+                            .foregroundColor(themeColors.mutedText)
                             .tracking(1)
                             .padding(.horizontal, 12)
                             .padding(.bottom, 8)
@@ -61,12 +66,12 @@ struct SidebarView: View {
                             HStack(spacing: 6) {
                                 Image(systemName: smartCollectionsExpanded ? "chevron.down" : "chevron.right")
                                     .font(.system(size: 10, weight: .semibold))
-                                    .foregroundColor(.white.opacity(0.4))
+                                    .foregroundColor(themeColors.mutedText)
                                     .frame(width: 12)
 
                                 Text("SMART")
                                     .font(.system(size: 11, weight: .semibold))
-                                    .foregroundColor(.white.opacity(0.4))
+                                    .foregroundColor(themeColors.mutedText)
                                     .tracking(1)
                             }
                         }
@@ -100,7 +105,7 @@ struct SidebarView: View {
                     VStack(alignment: .leading, spacing: 4) {
                         Text("AI")
                             .font(.system(size: 11, weight: .semibold))
-                            .foregroundColor(.white.opacity(0.4))
+                            .foregroundColor(themeColors.mutedText)
                             .tracking(1)
                             .padding(.horizontal, 12)
                             .padding(.bottom, 8)
@@ -114,7 +119,7 @@ struct SidebarView: View {
 
                                 Text("Scout")
                                     .font(.system(size: 13))
-                                    .foregroundColor(.white.opacity(0.8))
+                                    .foregroundColor(themeColors.secondaryText)
 
                                 Spacer()
                             }
@@ -136,7 +141,7 @@ struct SidebarView: View {
 
                                 Text("Batch Summarize")
                                     .font(.system(size: 13))
-                                    .foregroundColor(.white.opacity(0.8))
+                                    .foregroundColor(themeColors.secondaryText)
 
                                 Spacer()
 
@@ -170,7 +175,7 @@ struct SidebarView: View {
 
                                 Text("Build Search Index")
                                     .font(.system(size: 13))
-                                    .foregroundColor(.white.opacity(0.8))
+                                    .foregroundColor(themeColors.secondaryText)
 
                                 Spacer()
 
@@ -226,12 +231,12 @@ struct SidebarView: View {
                                 HStack(spacing: 6) {
                                     Image(systemName: foldersExpanded ? "chevron.down" : "chevron.right")
                                         .font(.system(size: 10, weight: .semibold))
-                                        .foregroundColor(.white.opacity(0.4))
+                                        .foregroundColor(themeColors.mutedText)
                                         .frame(width: 12)
 
                                     Text("FOLDERS")
                                         .font(.system(size: 11, weight: .semibold))
-                                        .foregroundColor(.white.opacity(0.4))
+                                        .foregroundColor(themeColors.mutedText)
                                         .tracking(1)
                                 }
                             }
@@ -242,11 +247,11 @@ struct SidebarView: View {
                             Button(action: { showNewFolderSheet = true }) {
                                 Image(systemName: "plus")
                                     .font(.system(size: 12, weight: .medium))
-                                    .foregroundColor(.white.opacity(0.4))
+                                    .foregroundColor(themeColors.mutedText)
                                     .frame(width: 20, height: 20)
                                     .background(
                                         Circle()
-                                            .fill(Color.white.opacity(0.05))
+                                            .fill(themeColors.hoverBackground)
                                     )
                             }
                             .buttonStyle(.plain)
@@ -258,7 +263,7 @@ struct SidebarView: View {
                             if dbManager.folders.isEmpty {
                                 Text("No folders")
                                     .font(.system(size: 12))
-                                    .foregroundColor(.white.opacity(0.3))
+                                    .foregroundColor(themeColors.mutedText)
                                     .padding(.horizontal, 12)
                                     .padding(.vertical, 8)
                             } else {
@@ -283,12 +288,12 @@ struct SidebarView: View {
                                 HStack(spacing: 6) {
                                     Image(systemName: tagsExpanded ? "chevron.down" : "chevron.right")
                                         .font(.system(size: 10, weight: .semibold))
-                                        .foregroundColor(.white.opacity(0.4))
+                                        .foregroundColor(themeColors.mutedText)
                                         .frame(width: 12)
 
                                     Text("QUICK TAGS")
                                         .font(.system(size: 11, weight: .semibold))
-                                        .foregroundColor(.white.opacity(0.4))
+                                        .foregroundColor(themeColors.mutedText)
                                         .tracking(1)
                                 }
                             }
@@ -299,11 +304,11 @@ struct SidebarView: View {
                             Button(action: { showNewTagSheet = true }) {
                                 Image(systemName: "plus")
                                     .font(.system(size: 12, weight: .medium))
-                                    .foregroundColor(.white.opacity(0.4))
+                                    .foregroundColor(themeColors.mutedText)
                                     .frame(width: 20, height: 20)
                                     .background(
                                         Circle()
-                                            .fill(Color.white.opacity(0.05))
+                                            .fill(themeColors.hoverBackground)
                                     )
                             }
                             .buttonStyle(.plain)
@@ -334,7 +339,7 @@ struct SidebarView: View {
             // Bottom section with import
             VStack(spacing: 12) {
                 Divider()
-                    .background(Color.white.opacity(0.1))
+                    .background(themeColors.divider)
 
                 Button(action: { showSettingsSheet = true }) {
                     HStack {
@@ -361,12 +366,12 @@ struct SidebarView: View {
                         Text("Import Database")
                             .font(.system(size: 13))
                     }
-                    .foregroundColor(.white.opacity(0.6))
+                    .foregroundColor(themeColors.tertiaryText)
                     .frame(maxWidth: .infinity)
                     .padding(.vertical, 10)
                     .background(
                         RoundedRectangle(cornerRadius: 8)
-                            .fill(Color.white.opacity(0.05))
+                            .fill(themeColors.hoverBackground)
                     )
                 }
                 .buttonStyle(.plain)
@@ -402,7 +407,7 @@ struct SidebarView: View {
             Text("Are you sure you want to delete all \(dbManager.stats.total) bookmarks? This cannot be undone.")
         }
         .background(
-            Color.sidebarBackground
+            themeColors.sidebarBackground
                 .background(.ultraThinMaterial)
         )
         .sheet(isPresented: $showNewFolderSheet) {
@@ -473,6 +478,7 @@ struct SidebarView: View {
 }
 
 struct SidebarItem: View {
+    @Environment(\.colorScheme) var colorScheme
     let icon: String
     let title: String
     var count: Int?
@@ -482,29 +488,33 @@ struct SidebarItem: View {
 
     @State private var isHovered = false
 
+    private var themeColors: ThemeColors {
+        ThemeColors(colorScheme: colorScheme)
+    }
+
     var body: some View {
         Button(action: action) {
             HStack(spacing: 10) {
                 Image(systemName: icon)
                     .font(.system(size: 14))
-                    .foregroundColor(isSelected ? accentColor : .white.opacity(0.6))
+                    .foregroundColor(isSelected ? accentColor : themeColors.tertiaryText)
                     .frame(width: 20)
 
                 Text(title)
                     .font(.system(size: 13, weight: isSelected ? .semibold : .regular))
-                    .foregroundColor(isSelected ? .white : .white.opacity(0.8))
+                    .foregroundColor(isSelected ? themeColors.primaryText : themeColors.secondaryText)
 
                 Spacer()
 
                 if let count = count {
                     Text("\(count)")
                         .font(.system(size: 11, weight: .medium))
-                        .foregroundColor(isSelected ? accentColor : .white.opacity(0.4))
+                        .foregroundColor(isSelected ? accentColor : themeColors.mutedText)
                         .padding(.horizontal, 8)
                         .padding(.vertical, 3)
                         .background(
                             Capsule()
-                                .fill(isSelected ? accentColor.opacity(0.2) : Color.white.opacity(0.05))
+                                .fill(isSelected ? accentColor.opacity(0.2) : themeColors.hoverBackground)
                         )
                 }
             }
@@ -512,7 +522,7 @@ struct SidebarItem: View {
             .padding(.vertical, 8)
             .background(
                 RoundedRectangle(cornerRadius: 8)
-                    .fill(isSelected ? accentColor.opacity(0.15) : (isHovered ? Color.white.opacity(0.05) : Color.clear))
+                    .fill(isSelected ? accentColor.opacity(0.15) : (isHovered ? themeColors.hoverBackground : Color.clear))
             )
             .overlay(
                 RoundedRectangle(cornerRadius: 8)
@@ -526,7 +536,9 @@ struct SidebarItem: View {
     }
 }
 
+
 struct SidebarFolderItem: View {
+    @Environment(\.colorScheme) var colorScheme
     let folder: Folder
     let isSelected: Bool
     let action: () -> Void
@@ -538,17 +550,21 @@ struct SidebarFolderItem: View {
     @State private var showRenameSheet = false
     @State private var showDeleteConfirm = false
 
+    private var themeColors: ThemeColors {
+        ThemeColors(colorScheme: colorScheme)
+    }
+
     var body: some View {
         Button(action: action) {
             HStack(spacing: 10) {
                 Image(systemName: "folder.fill")
                     .font(.system(size: 14))
-                    .foregroundColor(isSelected ? folder.color : .white.opacity(0.6))
+                    .foregroundColor(isSelected ? folder.color : themeColors.tertiaryText)
                     .frame(width: 20)
 
                 Text(folder.name)
                     .font(.system(size: 13, weight: isSelected ? .semibold : .regular))
-                    .foregroundColor(isSelected ? .white : .white.opacity(0.8))
+                    .foregroundColor(isSelected ? themeColors.primaryText : themeColors.secondaryText)
 
                 Spacer()
             }
@@ -556,7 +572,7 @@ struct SidebarFolderItem: View {
             .padding(.vertical, 8)
             .background(
                 RoundedRectangle(cornerRadius: 8)
-                    .fill(isTargeted ? folder.color.opacity(0.3) : (isSelected ? folder.color.opacity(0.15) : (isHovered ? Color.white.opacity(0.05) : Color.clear)))
+                    .fill(isTargeted ? folder.color.opacity(0.3) : (isSelected ? folder.color.opacity(0.15) : (isHovered ? themeColors.hoverBackground : Color.clear)))
             )
             .overlay(
                 RoundedRectangle(cornerRadius: 8)
@@ -596,17 +612,12 @@ struct SidebarFolderItem: View {
                 Label("Delete", systemImage: "trash")
             }
         }
-        .onDrop(of: [.text], isTargeted: $isTargeted) { providers in
-            guard let provider = providers.first else { return false }
-
-            provider.loadItem(forTypeIdentifier: "public.text", options: nil) { data, error in
-                if let data = data as? Data, let bookmarkId = String(data: data, encoding: .utf8) {
-                    DispatchQueue.main.async {
-                        dbManager.setFolder(bookmarkId, folderId: folder.id)
-                    }
-                }
-            }
+        .dropDestination(for: String.self) { items, _ in
+            guard let bookmarkId = items.first else { return false }
+            dbManager.setFolder(bookmarkId, folderId: folder.id)
             return true
+        } isTargeted: { targeted in
+            isTargeted = targeted
         }
         .sheet(isPresented: $showRenameSheet) {
             RenameFolderSheet(isPresented: $showRenameSheet, folder: folder)
@@ -640,6 +651,7 @@ struct SidebarFolderItem: View {
 }
 
 struct SidebarTagItem: View {
+    @Environment(\.colorScheme) var colorScheme
     let tag: Tag
     let isSelected: Bool
     let action: () -> Void
@@ -650,6 +662,10 @@ struct SidebarTagItem: View {
     @State private var showDeleteConfirm = false
     @State private var showRenameSheet = false
 
+    private var themeColors: ThemeColors {
+        ThemeColors(colorScheme: colorScheme)
+    }
+
     private var quickTags: [Tag] {
         dbManager.tags.filter { $0.isQuickTag }
     }
@@ -659,6 +675,9 @@ struct SidebarTagItem: View {
     }
 
     var body: some View {
+        let disabledColor = colorScheme == .dark ? Color.white.opacity(0.15) : Color.black.opacity(0.15)
+        let enabledColor = colorScheme == .dark ? Color.white.opacity(0.5) : Color.black.opacity(0.4)
+
         Button(action: action) {
             HStack(spacing: 6) {
                 // Reorder buttons on hover
@@ -671,7 +690,7 @@ struct SidebarTagItem: View {
                         } label: {
                             Image(systemName: "chevron.up")
                                 .font(.system(size: 8, weight: .bold))
-                                .foregroundColor(tagIndex == 0 ? .white.opacity(0.15) : .white.opacity(0.5))
+                                .foregroundColor(tagIndex == 0 ? disabledColor : enabledColor)
                         }
                         .buttonStyle(.plain)
                         .disabled(tagIndex == 0)
@@ -683,7 +702,7 @@ struct SidebarTagItem: View {
                         } label: {
                             Image(systemName: "chevron.down")
                                 .font(.system(size: 8, weight: .bold))
-                                .foregroundColor(tagIndex == quickTags.count - 1 ? .white.opacity(0.15) : .white.opacity(0.5))
+                                .foregroundColor(tagIndex == quickTags.count - 1 ? disabledColor : enabledColor)
                         }
                         .buttonStyle(.plain)
                         .disabled(tagIndex == quickTags.count - 1)
@@ -697,7 +716,7 @@ struct SidebarTagItem: View {
 
                 Text(tag.name)
                     .font(.system(size: 13, weight: isSelected ? .semibold : .regular))
-                    .foregroundColor(isSelected ? .white : .white.opacity(0.8))
+                    .foregroundColor(isSelected ? themeColors.primaryText : themeColors.secondaryText)
 
                 Spacer()
 
@@ -708,7 +727,7 @@ struct SidebarTagItem: View {
                     } label: {
                         Image(systemName: "xmark")
                             .font(.system(size: 10, weight: .semibold))
-                            .foregroundColor(.white.opacity(0.4))
+                            .foregroundColor(themeColors.mutedText)
                     }
                     .buttonStyle(.plain)
                 }
@@ -717,7 +736,7 @@ struct SidebarTagItem: View {
             .padding(.vertical, 8)
             .background(
                 RoundedRectangle(cornerRadius: 8)
-                    .fill(isSelected ? tag.color.opacity(0.15) : (isHovered ? Color.white.opacity(0.05) : Color.clear))
+                    .fill(isSelected ? tag.color.opacity(0.15) : (isHovered ? themeColors.hoverBackground : Color.clear))
             )
             .overlay(
                 RoundedRectangle(cornerRadius: 8)
@@ -777,6 +796,7 @@ struct SidebarTagItem: View {
 // MARK: - Sheets
 
 struct NewFolderSheet: View {
+    @Environment(\.colorScheme) var colorScheme
     @Binding var isPresented: Bool
     @EnvironmentObject var dbManager: DatabaseManager
     @State private var name = ""
@@ -784,20 +804,24 @@ struct NewFolderSheet: View {
 
     let colors = ["#ef4444", "#f59e0b", "#22c55e", "#3b82f6", "#8b5cf6", "#ec4899", "#6b7280"]
 
+    private var themeColors: ThemeColors {
+        ThemeColors(colorScheme: colorScheme)
+    }
+
     var body: some View {
         VStack(spacing: 20) {
             Text("New Folder")
                 .font(.system(size: 18, weight: .semibold))
-                .foregroundColor(.white)
+                .foregroundColor(themeColors.primaryText)
 
             TextField("Folder name", text: $name)
                 .textFieldStyle(.plain)
                 .padding(12)
                 .background(
                     RoundedRectangle(cornerRadius: 8)
-                        .fill(Color.white.opacity(0.08))
+                        .fill(themeColors.inputBackground)
                 )
-                .foregroundColor(.white)
+                .foregroundColor(themeColors.primaryText)
 
             HStack(spacing: 12) {
                 ForEach(colors, id: \.self) { color in
@@ -806,7 +830,7 @@ struct NewFolderSheet: View {
                         .frame(width: 28, height: 28)
                         .overlay(
                             Circle()
-                                .stroke(Color.white, lineWidth: selectedColor == color ? 2 : 0)
+                                .stroke(themeColors.primaryText, lineWidth: selectedColor == color ? 2 : 0)
                         )
                         .onTapGesture {
                             selectedColor = color
@@ -819,7 +843,7 @@ struct NewFolderSheet: View {
                     isPresented = false
                 }
                 .buttonStyle(.plain)
-                .foregroundColor(.white.opacity(0.6))
+                .foregroundColor(themeColors.tertiaryText)
 
                 Button("Create") {
                     if !name.isEmpty {
@@ -833,37 +857,42 @@ struct NewFolderSheet: View {
         }
         .padding(24)
         .frame(width: 320)
-        .background(Color.cardBackground)
+        .background(themeColors.cardBackground)
     }
 }
 
 struct RenameFolderSheet: View {
+    @Environment(\.colorScheme) var colorScheme
     @Binding var isPresented: Bool
     let folder: Folder
     @EnvironmentObject var dbManager: DatabaseManager
     @State private var name = ""
 
+    private var themeColors: ThemeColors {
+        ThemeColors(colorScheme: colorScheme)
+    }
+
     var body: some View {
         VStack(spacing: 20) {
             Text("Rename Folder")
                 .font(.system(size: 18, weight: .semibold))
-                .foregroundColor(.white)
+                .foregroundColor(themeColors.primaryText)
 
             TextField("Folder name", text: $name)
                 .textFieldStyle(.plain)
                 .padding(12)
                 .background(
                     RoundedRectangle(cornerRadius: 8)
-                        .fill(Color.white.opacity(0.08))
+                        .fill(themeColors.inputBackground)
                 )
-                .foregroundColor(.white)
+                .foregroundColor(themeColors.primaryText)
 
             HStack(spacing: 12) {
                 Button("Cancel") {
                     isPresented = false
                 }
                 .buttonStyle(.plain)
-                .foregroundColor(.white.opacity(0.6))
+                .foregroundColor(themeColors.tertiaryText)
 
                 Button("Rename") {
                     if !name.isEmpty {
@@ -877,7 +906,7 @@ struct RenameFolderSheet: View {
         }
         .padding(24)
         .frame(width: 320)
-        .background(Color.cardBackground)
+        .background(themeColors.cardBackground)
         .onAppear {
             name = folder.name
         }
@@ -885,32 +914,37 @@ struct RenameFolderSheet: View {
 }
 
 struct RenameTagSheet: View {
+    @Environment(\.colorScheme) var colorScheme
     @Binding var isPresented: Bool
     let tag: Tag
     @EnvironmentObject var dbManager: DatabaseManager
     @State private var name = ""
 
+    private var themeColors: ThemeColors {
+        ThemeColors(colorScheme: colorScheme)
+    }
+
     var body: some View {
         VStack(spacing: 20) {
             Text("Rename Tag")
                 .font(.system(size: 18, weight: .semibold))
-                .foregroundColor(.white)
+                .foregroundColor(themeColors.primaryText)
 
             TextField("Tag name", text: $name)
                 .textFieldStyle(.plain)
                 .padding(12)
                 .background(
                     RoundedRectangle(cornerRadius: 8)
-                        .fill(Color.white.opacity(0.08))
+                        .fill(themeColors.inputBackground)
                 )
-                .foregroundColor(.white)
+                .foregroundColor(themeColors.primaryText)
 
             HStack(spacing: 12) {
                 Button("Cancel") {
                     isPresented = false
                 }
                 .buttonStyle(.plain)
-                .foregroundColor(.white.opacity(0.6))
+                .foregroundColor(themeColors.tertiaryText)
 
                 Button("Rename") {
                     if !name.isEmpty {
@@ -924,7 +958,7 @@ struct RenameTagSheet: View {
         }
         .padding(24)
         .frame(width: 320)
-        .background(Color.cardBackground)
+        .background(themeColors.cardBackground)
         .onAppear {
             name = tag.name
         }
@@ -932,6 +966,7 @@ struct RenameTagSheet: View {
 }
 
 struct NewTagSheet: View {
+    @Environment(\.colorScheme) var colorScheme
     @Binding var isPresented: Bool
     @EnvironmentObject var dbManager: DatabaseManager
     @State private var name = ""
@@ -939,20 +974,24 @@ struct NewTagSheet: View {
 
     let colors = ["#ef4444", "#f59e0b", "#22c55e", "#3b82f6", "#8b5cf6", "#ec4899", "#6b7280"]
 
+    private var themeColors: ThemeColors {
+        ThemeColors(colorScheme: colorScheme)
+    }
+
     var body: some View {
         VStack(spacing: 20) {
             Text("New Tag")
                 .font(.system(size: 18, weight: .semibold))
-                .foregroundColor(.white)
+                .foregroundColor(themeColors.primaryText)
 
             TextField("Tag name", text: $name)
                 .textFieldStyle(.plain)
                 .padding(12)
                 .background(
                     RoundedRectangle(cornerRadius: 8)
-                        .fill(Color.white.opacity(0.08))
+                        .fill(themeColors.inputBackground)
                 )
-                .foregroundColor(.white)
+                .foregroundColor(themeColors.primaryText)
 
             HStack(spacing: 12) {
                 ForEach(colors, id: \.self) { color in
@@ -961,7 +1000,7 @@ struct NewTagSheet: View {
                         .frame(width: 28, height: 28)
                         .overlay(
                             Circle()
-                                .stroke(Color.white, lineWidth: selectedColor == color ? 2 : 0)
+                                .stroke(themeColors.primaryText, lineWidth: selectedColor == color ? 2 : 0)
                         )
                         .onTapGesture {
                             selectedColor = color
@@ -974,7 +1013,7 @@ struct NewTagSheet: View {
                     isPresented = false
                 }
                 .buttonStyle(.plain)
-                .foregroundColor(.white.opacity(0.6))
+                .foregroundColor(themeColors.tertiaryText)
 
                 Button("Create") {
                     if !name.isEmpty {
@@ -988,6 +1027,6 @@ struct NewTagSheet: View {
         }
         .padding(24)
         .frame(width: 320)
-        .background(Color.cardBackground)
+        .background(themeColors.cardBackground)
     }
 }

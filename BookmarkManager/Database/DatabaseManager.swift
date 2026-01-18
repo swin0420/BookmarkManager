@@ -138,7 +138,7 @@ class DatabaseManager: ObservableObject {
             ]
 
             for (name, color) in defaultTags {
-                executeSQL("INSERT INTO tags (id, name, color, is_quick_tag) VALUES ('\(UUID().uuidString)', '\(name)', '\(color)', 1)")
+                executeParameterized("INSERT INTO tags (id, name, color, is_quick_tag) VALUES (?, ?, ?, 1)", params: [UUID().uuidString, name, color])
             }
         }
     }
@@ -279,7 +279,7 @@ class DatabaseManager: ObservableObject {
     }
 
     func toggleFavorite(_ bookmarkId: String) {
-        executeSQL("UPDATE bookmarks SET is_favorite = NOT is_favorite WHERE id = '\(bookmarkId)'")
+        executeParameterized("UPDATE bookmarks SET is_favorite = NOT is_favorite WHERE id = ?", params: [bookmarkId])
         loadStats()
         notifyDataChanged()
     }
@@ -291,23 +291,18 @@ class DatabaseManager: ObservableObject {
     }
 
     func setFolder(_ bookmarkId: String, folderId: String?) {
-        if let folderId = folderId {
-            executeSQL("UPDATE bookmarks SET folder_id = '\(folderId)' WHERE id = '\(bookmarkId)'")
-        } else {
-            executeSQL("UPDATE bookmarks SET folder_id = NULL WHERE id = '\(bookmarkId)'")
-        }
+        executeParameterized("UPDATE bookmarks SET folder_id = ? WHERE id = ?", params: [folderId, bookmarkId])
         notifyDataChanged()
     }
 
     func deleteBookmark(_ bookmarkId: String) {
-        executeSQL("DELETE FROM bookmarks WHERE id = '\(bookmarkId)'")
+        executeParameterized("DELETE FROM bookmarks WHERE id = ?", params: [bookmarkId])
         loadStats()
         notifyDataChanged()
     }
 
     func updateSummary(_ bookmarkId: String, summary: String) {
-        let escaped = summary.replacingOccurrences(of: "'", with: "''")
-        executeSQL("UPDATE bookmarks SET summary = '\(escaped)' WHERE id = '\(bookmarkId)'")
+        executeParameterized("UPDATE bookmarks SET summary = ? WHERE id = ?", params: [summary, bookmarkId])
         notifyDataChanged()
     }
 
@@ -388,29 +383,28 @@ class DatabaseManager: ObservableObject {
     }
 
     func addTagToBookmark(_ bookmarkId: String, tagId: String) {
-        executeSQL("INSERT OR IGNORE INTO bookmark_tags (bookmark_id, tag_id) VALUES ('\(bookmarkId)', '\(tagId)')")
+        executeParameterized("INSERT OR IGNORE INTO bookmark_tags (bookmark_id, tag_id) VALUES (?, ?)", params: [bookmarkId, tagId])
         notifyDataChanged()
     }
 
     func removeTagFromBookmark(_ bookmarkId: String, tagId: String) {
-        executeSQL("DELETE FROM bookmark_tags WHERE bookmark_id = '\(bookmarkId)' AND tag_id = '\(tagId)'")
+        executeParameterized("DELETE FROM bookmark_tags WHERE bookmark_id = ? AND tag_id = ?", params: [bookmarkId, tagId])
         notifyDataChanged()
     }
 
     func createTag(name: String, color: String, isQuickTag: Bool = false) {
         let id = UUID().uuidString
-        executeSQL("INSERT INTO tags (id, name, color, is_quick_tag) VALUES ('\(id)', '\(name)', '\(color)', \(isQuickTag ? 1 : 0))")
+        executeParameterized("INSERT INTO tags (id, name, color, is_quick_tag) VALUES (?, ?, ?, ?)", params: [id, name, color, isQuickTag ? 1 : 0])
         loadTags()
     }
 
     func deleteTag(_ tagId: String) {
-        executeSQL("DELETE FROM tags WHERE id = '\(tagId)'")
+        executeParameterized("DELETE FROM tags WHERE id = ?", params: [tagId])
         loadTags()
     }
 
     func renameTag(_ tagId: String, newName: String) {
-        let escaped = newName.replacingOccurrences(of: "'", with: "''")
-        executeSQL("UPDATE tags SET name = '\(escaped)' WHERE id = '\(tagId)'")
+        executeParameterized("UPDATE tags SET name = ? WHERE id = ?", params: [newName, tagId])
         loadTags()
     }
 
@@ -451,31 +445,30 @@ class DatabaseManager: ObservableObject {
 
     func createFolder(name: String, color: String = "#6b7280") {
         let id = UUID().uuidString
-        executeSQL("INSERT INTO folders (id, name, color) VALUES ('\(id)', '\(name)', '\(color)')")
+        executeParameterized("INSERT INTO folders (id, name, color) VALUES (?, ?, ?)", params: [id, name, color])
         loadFolders()
     }
 
     func deleteFolder(_ folderId: String) {
-        executeSQL("DELETE FROM folders WHERE id = '\(folderId)'")
+        executeParameterized("DELETE FROM folders WHERE id = ?", params: [folderId])
         loadFolders()
     }
 
     func renameFolder(_ folderId: String, newName: String) {
-        let escaped = newName.replacingOccurrences(of: "'", with: "''")
-        executeSQL("UPDATE folders SET name = '\(escaped)' WHERE id = '\(folderId)'")
+        executeParameterized("UPDATE folders SET name = ? WHERE id = ?", params: [newName, folderId])
         loadFolders()
     }
 
     func reorderFolders(_ folderIds: [String]) {
         for (index, id) in folderIds.enumerated() {
-            executeSQL("UPDATE folders SET sort_order = \(index) WHERE id = '\(id)'")
+            executeParameterized("UPDATE folders SET sort_order = ? WHERE id = ?", params: [index, id])
         }
         loadFolders()
     }
 
     func reorderTags(_ tagIds: [String]) {
         for (index, id) in tagIds.enumerated() {
-            executeSQL("UPDATE tags SET sort_order = \(index) WHERE id = '\(id)'")
+            executeParameterized("UPDATE tags SET sort_order = ? WHERE id = ?", params: [index, id])
         }
         loadTags()
     }
@@ -518,6 +511,7 @@ class DatabaseManager: ObservableObject {
 
     func getSmartCollectionBookmarks(_ type: SmartCollectionType, author: String? = nil, query: String? = nil) -> [Bookmark] {
         var conditions: [String] = []
+        var params: [String] = []
 
         // Smart collection condition
         switch type {
@@ -527,23 +521,29 @@ class DatabaseManager: ObservableObject {
             conditions.append("(media_urls NOT LIKE '%http%' OR media_urls IS NULL OR media_urls = '' OR media_urls = '[]')")
         }
 
-        // Author filter
+        // Author filter (parameterized)
         if let author = author, !author.isEmpty {
-            conditions.append("author_handle = '\(author.replacingOccurrences(of: "'", with: "''"))'")
+            conditions.append("author_handle = ?")
+            params.append(author)
         }
 
-        // Search query filter
+        // Search query filter (parameterized)
         if let query = query, !query.isEmpty {
-            let escaped = query.replacingOccurrences(of: "'", with: "''")
-            conditions.append("(content LIKE '%\(escaped)%' OR author_handle LIKE '%\(escaped)%' OR author_name LIKE '%\(escaped)%')")
+            conditions.append("(content LIKE ? OR author_handle LIKE ? OR author_name LIKE ?)")
+            let likeQuery = "%\(query)%"
+            params.append(contentsOf: [likeQuery, likeQuery, likeQuery])
         }
 
         let whereClause = conditions.joined(separator: " AND ")
         let sql = "SELECT * FROM bookmarks WHERE \(whereClause) ORDER BY bookmarked_at DESC"
 
+        #if DEBUG
         print("🔍 Smart Collection SQL: \(sql)")
-        let results = queryBookmarks(sql)
+        #endif
+        let results = queryBookmarks(sql, params: params)
+        #if DEBUG
         print("🔍 Found \(results.count) bookmarks")
+        #endif
         return results
     }
 
@@ -557,7 +557,7 @@ class DatabaseManager: ObservableObject {
 
     func deleteBookmarks(_ bookmarkIds: [String]) {
         for id in bookmarkIds {
-            executeSQL("DELETE FROM bookmarks WHERE id = '\(id)'")
+            executeParameterized("DELETE FROM bookmarks WHERE id = ?", params: [id])
         }
         loadStats()
     }
@@ -603,7 +603,9 @@ class DatabaseManager: ObservableObject {
             notifyDataChanged()
         }
 
+        #if DEBUG
         print("Removed \(removed) duplicate bookmarks")
+        #endif
         return removed
     }
 
@@ -636,7 +638,9 @@ class DatabaseManager: ObservableObject {
         var updatedCount = 0
         let now = ISO8601DateFormatter().string(from: Date())
 
+        #if DEBUG
         print("📦 Starting import of \(bookmarks.count) bookmarks...")
+        #endif
 
         for bookmark in bookmarks {
             let mediaUrlsJson = (try? JSONEncoder().encode(bookmark.media_urls ?? [])).flatMap { String(data: $0, encoding: .utf8) } ?? "[]"
@@ -716,7 +720,9 @@ class DatabaseManager: ObservableObject {
             }
         }
 
+        #if DEBUG
         print("✅ Import complete: \(newCount) new, \(updatedCount) updated (total processed: \(newCount + updatedCount))")
+        #endif
         loadData()
         notifyDataChanged()
         return ImportResult(newCount: newCount, updatedCount: updatedCount)
@@ -818,7 +824,17 @@ class DatabaseManager: ObservableObject {
     }
 
     func hasEmbedding(bookmarkId: String) -> Bool {
-        let count = queryScalar("SELECT COUNT(*) FROM bookmark_embeddings WHERE bookmark_id = '\(bookmarkId)'") ?? 0
+        var statement: OpaquePointer?
+        var count = 0
+
+        let sql = "SELECT COUNT(*) FROM bookmark_embeddings WHERE bookmark_id = ?"
+        if sqlite3_prepare_v2(db, sql, -1, &statement, nil) == SQLITE_OK {
+            sqlite3_bind_text(statement, 1, bookmarkId, -1, unsafeBitCast(-1, to: sqlite3_destructor_type.self))
+            if sqlite3_step(statement) == SQLITE_ROW {
+                count = Int(sqlite3_column_int(statement, 0))
+            }
+        }
+        sqlite3_finalize(statement)
         return count > 0
     }
 
@@ -841,17 +857,9 @@ class DatabaseManager: ObservableObject {
 
     func saveChatMessage(id: String, role: String, content: String, contextBookmarkIds: [String]?) {
         let contextJson = contextBookmarkIds.flatMap { try? JSONEncoder().encode($0) }.flatMap { String(data: $0, encoding: .utf8) }
-        let escapedContent = content.replacingOccurrences(of: "'", with: "''")
 
-        var sql: String
-        if let contextJson = contextJson {
-            let escapedContext = contextJson.replacingOccurrences(of: "'", with: "''")
-            sql = "INSERT INTO chat_messages (id, role, content, context_bookmark_ids) VALUES ('\(id)', '\(role)', '\(escapedContent)', '\(escapedContext)')"
-        } else {
-            sql = "INSERT INTO chat_messages (id, role, content) VALUES ('\(id)', '\(role)', '\(escapedContent)')"
-        }
-
-        executeSQL(sql)
+        let sql = "INSERT INTO chat_messages (id, role, content, context_bookmark_ids) VALUES (?, ?, ?, ?)"
+        executeParameterized(sql, params: [id, role, content, contextJson])
     }
 
     func loadChatHistory(limit: Int = 50) -> [ChatMessage] {
@@ -897,10 +905,39 @@ class DatabaseManager: ObservableObject {
         var errMsg: UnsafeMutablePointer<CChar>?
         if sqlite3_exec(db, sql, nil, nil, &errMsg) != SQLITE_OK {
             if let errMsg = errMsg {
+                #if DEBUG
                 print("SQL Error: \(String(cString: errMsg))")
+                #endif
                 sqlite3_free(errMsg)
             }
         }
+    }
+
+    /// Execute parameterized SQL to prevent SQL injection
+    private func executeParameterized(_ sql: String, params: [Any?]) {
+        var statement: OpaquePointer?
+
+        if sqlite3_prepare_v2(db, sql, -1, &statement, nil) == SQLITE_OK {
+            for (index, param) in params.enumerated() {
+                let idx = Int32(index + 1)
+                if let stringVal = param as? String {
+                    sqlite3_bind_text(statement, idx, stringVal, -1, unsafeBitCast(-1, to: sqlite3_destructor_type.self))
+                } else if let intVal = param as? Int {
+                    sqlite3_bind_int(statement, idx, Int32(intVal))
+                } else if param == nil {
+                    sqlite3_bind_null(statement, idx)
+                }
+            }
+
+            if sqlite3_step(statement) != SQLITE_DONE {
+                #if DEBUG
+                if let errMsg = sqlite3_errmsg(db) {
+                    print("SQL Error: \(String(cString: errMsg))")
+                }
+                #endif
+            }
+        }
+        sqlite3_finalize(statement)
     }
 
     private func queryScalar(_ sql: String) -> Int? {

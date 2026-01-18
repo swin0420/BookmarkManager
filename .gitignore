@@ -1,5 +1,4 @@
 # Build artifacts
-*.dmg
 DerivedData/
 build/
 

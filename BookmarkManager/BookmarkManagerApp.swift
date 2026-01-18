@@ -17,7 +17,9 @@ struct BookmarkManagerApp: App {
         if let data = logMessage.data(using: .utf8) {
             try? data.write(to: logPath)
         }
+        #if DEBUG
         print("Log path: \(logPath.path)")
+        #endif
     }
 
     var body: some Scene {
@@ -65,11 +67,15 @@ struct BookmarkManagerApp: App {
         let timestamp = ISO8601DateFormatter().string(from: Date())
         logToFile("📥 [\(timestamp)] Received URL - length: \(url.absoluteString.count) chars")
         logToFile("   Scheme: \(url.scheme ?? "nil"), Host: \(url.host ?? "nil")")
+        #if DEBUG
         print("📥 [\(timestamp)] Received URL - length: \(url.absoluteString.count) chars")
         print("   Scheme: \(url.scheme ?? "nil"), Host: \(url.host ?? "nil")")
+        #endif
 
         guard url.scheme == "bookmarkmanager" else {
+            #if DEBUG
             print("❌ Invalid scheme")
+            #endif
             return
         }
 
@@ -77,13 +83,17 @@ struct BookmarkManagerApp: App {
         NSApp.activate(ignoringOtherApps: true)
 
         if url.host == "open" {
+            #if DEBUG
             print("✅ Open command received - app activated")
+            #endif
             return
         }
 
         if url.host == "import" {
             logToFile("📦 Import command received")
+            #if DEBUG
             print("📦 Import command received")
+            #endif
 
             // Try URLComponents first, fall back to manual parsing for large URLs
             var dataParam: String?
@@ -107,17 +117,23 @@ struct BookmarkManagerApp: App {
 
                 logToFile("   Data param length: \(dataParam.count)")
                 logToFile("   Decoded data length: \(decodedData.count)")
+                #if DEBUG
                 print("   Data param length: \(dataParam.count)")
                 print("   Decoded data length: \(decodedData.count)")
+                #endif
 
                 do {
                     let bookmarks = try JSONDecoder().decode([ImportedBookmark].self, from: jsonData)
                     logToFile("   ✅ Parsed \(bookmarks.count) bookmarks")
+                    #if DEBUG
                     print("   ✅ Parsed \(bookmarks.count) bookmarks")
+                    #endif
 
                     let result = dbManager.importBookmarks(bookmarks)
                     logToFile("   ✅ Imported: \(result.newCount) new, \(result.updatedCount) updated")
+                    #if DEBUG
                     print("   ✅ Imported: \(result.newCount) new, \(result.updatedCount) updated")
+                    #endif
 
                     DispatchQueue.main.async {
                         self.appState.importedNewCount = result.newCount
@@ -127,18 +143,50 @@ struct BookmarkManagerApp: App {
                     }
                 } catch {
                     logToFile("❌ Failed to decode bookmarks: \(error)")
+                    #if DEBUG
                     print("❌ Failed to decode bookmarks: \(error)")
+                    #endif
                 }
             } else {
-                // Check for file import
+                // Check for file import - with path validation
                 if let components = URLComponents(url: url, resolvingAgainstBaseURL: false),
                    let fileParam = components.queryItems?.first(where: { $0.name == "file" })?.value {
-                    logToFile("   File import: \(fileParam)")
-                    print("   File import: \(fileParam)")
-                    dbManager.importFromJSONFile(fileParam)
+                    // Validate file path to prevent path traversal attacks
+                    let resolvedPath = (fileParam as NSString).standardizingPath
+                    let homeDir = FileManager.default.homeDirectoryForCurrentUser.path
+                    let allowedPaths = [
+                        homeDir + "/Downloads",
+                        homeDir + "/Desktop",
+                        homeDir + "/Documents"
+                    ]
+
+                    let isAllowed = allowedPaths.contains { resolvedPath.hasPrefix($0) }
+                    guard isAllowed else {
+                        logToFile("❌ File import blocked - path not in allowed locations: \(resolvedPath)")
+                        #if DEBUG
+                        print("❌ File import blocked - path not in allowed locations: \(resolvedPath)")
+                        #endif
+                        return
+                    }
+
+                    // Verify file exists and is a regular file
+                    var isDirectory: ObjCBool = false
+                    guard FileManager.default.fileExists(atPath: resolvedPath, isDirectory: &isDirectory),
+                          !isDirectory.boolValue else {
+                        logToFile("❌ File not found or is directory: \(resolvedPath)")
+                        return
+                    }
+
+                    logToFile("   File import: \(resolvedPath)")
+                    #if DEBUG
+                    print("   File import: \(resolvedPath)")
+                    #endif
+                    dbManager.importFromJSONFile(resolvedPath)
                 } else {
                     logToFile("❌ Could not parse data from URL")
+                    #if DEBUG
                     print("❌ Could not parse data from URL")
+                    #endif
                 }
             }
         }
@@ -157,6 +205,21 @@ struct ImportedBookmark: Codable {
     let url: String
     let media_urls: [String]?
     let is_truncated: Bool?
+}
+
+// MARK: - App Theme
+enum AppTheme: String, CaseIterable {
+    case system = "System"
+    case light = "Light"
+    case dark = "Dark"
+
+    var icon: String {
+        switch self {
+        case .system: return "circle.lefthalf.filled"
+        case .light: return "sun.max.fill"
+        case .dark: return "moon.fill"
+        }
+    }
 }
 
 class AppState: ObservableObject {
@@ -184,6 +247,29 @@ class AppState: ObservableObject {
     // AI Features
     @Published var isSemanticSearchEnabled: Bool = false
     @Published var showChatView: Bool = false
+
+    // Theme (default to dark)
+    @Published var theme: AppTheme = .dark {
+        didSet {
+            UserDefaults.standard.set(theme.rawValue, forKey: "appTheme")
+        }
+    }
+
+    var preferredColorScheme: ColorScheme? {
+        switch theme {
+        case .system: return nil
+        case .light: return .light
+        case .dark: return .dark
+        }
+    }
+
+    init() {
+        // Load saved theme preference (defaults to dark if not set)
+        if let savedTheme = UserDefaults.standard.string(forKey: "appTheme"),
+           let theme = AppTheme(rawValue: savedTheme) {
+            self.theme = theme
+        }
+    }
 }
 
 enum SortOrder: String, CaseIterable {

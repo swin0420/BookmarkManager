@@ -1,50 +1,49 @@
 # BookmarkManager - Claude Context
 
-## Project Overview
-
 macOS SwiftUI app for managing Twitter/X bookmarks with AI-powered features.
 
 ## Architecture
 
 ```
 BookmarkManager/
-├── Models/           # Bookmark, Tag, Folder data models
+├── Models/           # Bookmark, Tag, Folder
 ├── Database/         # SQLite via DatabaseManager
-├── Services/         # API and AI services
-│   ├── ClaudeAPIService    # Claude API with streaming SSE
-│   ├── RAGService          # Retrieval-augmented generation
+├── Services/
+│   ├── ClaudeAPIService    # Claude API + SSE streaming
+│   ├── RAGService          # Parse → Search → Answer pipeline
 │   ├── SemanticSearchService
 │   └── EmbeddingService
 ├── Views/
-│   ├── AI/           # ChatView, AISettingsView
+│   ├── AI/           # ChatView, AISettingsView, BatchProcessingView
 │   ├── SidebarView
 │   ├── BookmarkGridView
 │   └── FilterBarView
 └── Styles/           # GlassmorphismStyle
 ```
 
-## Key Components
+## Scout Chat (ChatView.swift)
 
-### Scout Chat (ChatView.swift)
-- Streaming responses with batched UI updates (50ms)
-- Follow-up question suggestions parsed from `---FOLLOWUPS---` marker
-- Inline tweet previews via `[TWEET:id]@handle[/TWEET]` markers
-- Quick actions bar (folder, tag, copy)
+- **Streaming**: SSE via `URLSession.bytes`, batched UI updates (50ms)
+- **Follow-ups**: Parsed from `---FOLLOWUPS---` marker in response
+- **Inline tweets**: `[TWEET:id]@handle[/TWEET]` → compact preview cards
+- **Quick actions**: Add to folder, tag, copy (below source bar)
 
-### ClaudeAPIService
-- `sendMessage()` - Single message
-- `sendConversation()` - Multi-turn chat
-- `streamConversation()` - SSE streaming with `onChunk` callback
+## ClaudeAPIService
 
-### RAGService
-- `parseQuery()` - Extract search params with Haiku
-- `searchBookmarks()` - Keyword + semantic search
-- `ask()` / `askStreaming()` - Full RAG pipeline
+- `sendMessage()` - Single prompt
+- `sendConversation()` - Multi-turn
+- `streamConversation(onChunk:)` - Real-time streaming
 
-## Database
+## RAGService
 
-SQLite with tables: bookmarks, folders, tags, bookmark_tags, chat_history, embeddings
+- `parseQuery()` - Extract keywords/dates/authors via Haiku
+- `searchBookmarks()` - Keyword + semantic hybrid search
+- `ask()` / `askStreaming()` - Full RAG with context injection
 
-## UI Style
+## Database (SQLite)
 
-Dark theme with purple/cyan gradients, glassmorphism effects.
+Tables: `bookmarks`, `folders`, `tags`, `bookmark_tags`, `chat_history`, `embeddings`
+
+## UI
+
+Dark theme, purple/cyan gradients, glassmorphism. App icon: bookmark + sparkles.

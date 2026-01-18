@@ -2,18 +2,22 @@
 
 A macOS app for managing Twitter/X bookmarks with AI-powered search and chat.
 
+## Download
+
+Get the latest release from [Releases](../../releases) - download the `.dmg`, open it, and drag to Applications.
+
 ## Features
 
 - **Import & Organize** - Import bookmarks from JSON, organize with folders and tags
 - **Smart Search** - Full-text and semantic search across all bookmarks
 - **AI Chat (Scout)** - Ask questions about your bookmarks using natural language
 
-### Scout AI Features
+### Scout AI
 
-- **Streaming Responses** - See answers as they generate in real-time
+- **Streaming Responses** - See answers generate in real-time
 - **Inline Tweet Previews** - Cited tweets appear as compact cards
-- **Follow-up Suggestions** - Clickable question suggestions after each response
-- **Quick Actions** - Add sources to folders, apply tags, or copy responses
+- **Follow-up Suggestions** - Clickable questions after each response
+- **Quick Actions** - Add sources to folders, apply tags, copy responses
 
 ## Requirements
 
@@ -22,23 +26,19 @@ A macOS app for managing Twitter/X bookmarks with AI-powered search and chat.
 
 ## Setup
 
-1. Build and run in Xcode
-2. Go to Settings and add your Claude API key
-3. Import your bookmarks (JSON format)
-4. Click the sparkles icon to open Scout chat
+1. Download DMG from Releases and install
+2. Open Settings → Add your Claude API key
+3. Import bookmarks (JSON format)
+4. Click sparkles icon to open Scout
 
-## Building
+## Build from Source
 
 ```bash
+git clone https://github.com/YOUR_USERNAME/BookmarkManager.git
+cd BookmarkManager
 xcodebuild -scheme BookmarkManager -configuration Release build
 ```
 
-## Creating DMG
+## License
 
-```bash
-# Build release version
-xcodebuild -scheme BookmarkManager -configuration Release build
-
-# Create DMG (requires create-dmg or similar tool)
-create-dmg 'BookmarkManager.dmg' 'path/to/BookmarkManager.app'
-```
+MIT

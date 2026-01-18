@@ -1,0 +1,13 @@
+# Build artifacts
+*.dmg
+DerivedData/
+build/
+
+# Xcode
+xcuserdata/
+*.xcscmblueprint
+*.xccheckout
+
+# macOS
+.DS_Store
+*.swp

@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Twitter Bookmarks Exporter</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      width: 320px;
+      padding: 16px;
+      background: #f8fafc;
+      color: #0f172a;
+    }
+
+    .header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+
+    .header svg {
+      width: 32px;
+      height: 32px;
+      color: #1DA1F2;
+    }
+
+    .header h1 {
+      font-size: 16px;
+      font-weight: 600;
+    }
+
+    .status {
+      padding: 12px;
+      border-radius: 8px;
+      margin-bottom: 16px;
+      font-size: 14px;
+    }
+
+    .status.info {
+      background: #e0f2fe;
+      color: #0369a1;
+    }
+
+    .status.success {
+      background: #dcfce7;
+      color: #166534;
+    }
+
+    .status.error {
+      background: #fee2e2;
+      color: #dc2626;
+    }
+
+    .status.warning {
+      background: #fef3c7;
+      color: #92400e;
+    }
+
+    .btn {
+      width: 100%;
+      padding: 12px 16px;
+      border: none;
+      border-radius: 8px;
+      font-size: 14px;
+      font-weight: 500;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      transition: all 0.2s;
+    }
+
+    .btn-primary {
+      background: #1DA1F2;
+      color: white;
+    }
+
+    .btn-primary:hover {
+      background: #1a8cd8;
+    }
+
+    .btn-primary:disabled {
+      background: #94a3b8;
+      cursor: not-allowed;
+    }
+
+    .btn-secondary {
+      background: white;
+      color: #334155;
+      border: 1px solid #e2e8f0;
+      margin-top: 8px;
+    }
+
+    .btn-secondary:hover {
+      background: #f1f5f9;
+    }
+
+    .spinner {
+      width: 16px;
+      height: 16px;
+      border: 2px solid transparent;
+      border-top-color: currentColor;
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    .progress {
+      margin-top: 12px;
+      font-size: 12px;
+      color: #64748b;
+    }
+
+    .settings {
+      margin-top: 16px;
+      padding-top: 16px;
+      border-top: 1px solid #e2e8f0;
+    }
+
+    .settings label {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 13px;
+      color: #64748b;
+      cursor: pointer;
+    }
+
+    .settings input[type="checkbox"] {
+      width: 16px;
+      height: 16px;
+      cursor: pointer;
+    }
+
+    .footer {
+      margin-top: 16px;
+      padding-top: 16px;
+      border-top: 1px solid #e2e8f0;
+      font-size: 12px;
+      color: #94a3b8;
+      text-align: center;
+    }
+
+    .footer a {
+      color: #1DA1F2;
+      text-decoration: none;
+    }
+
+    .footer a:hover {
+      text-decoration: underline;
+    }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+      <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/>
+    </svg>
+    <h1>Bookmarks Exporter</h1>
+  </div>
+
+  <div id="status" class="status info">
+    Navigate to your Twitter bookmarks page to start exporting.
+  </div>
+
+  <button id="exportBtn" class="btn btn-primary" disabled>
+    <span id="btnText">Send to App</span>
+    <span id="btnSpinner" class="spinner" style="display: none;"></span>
+  </button>
+
+  <div id="progress" class="progress" style="display: none;"></div>
+
+  <button id="openAppBtn" class="btn btn-secondary">
+    Open Bookmark Manager
+  </button>
+
+  <div class="settings">
+    <label>
+      <input type="checkbox" id="autoScroll" checked>
+      Auto-scroll to load bookmarks
+    </label>
+    <label style="margin-top: 8px;">
+      <input type="checkbox" id="continueFromLast">
+      Continue from last export
+    </label>
+    <div id="lastExportInfo" style="margin-top: 6px; font-size: 11px; color: #64748b; display: none;">
+      Last export stopped at tweet: <span id="lastTweetId" style="font-family: monospace;"></span>
+    </div>
+  </div>
+
+  <div class="footer">
+    <p>Data stays on your machine</p>
+    <p style="margin-top: 4px;">No server required</p>
+  </div>
+
+  <script src="popup.js"></script>
+</body>
+</html>

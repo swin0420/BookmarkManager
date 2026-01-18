@@ -1,10 +1,10 @@
 # BookmarkManager
 
-A native macOS app for managing your Twitter/X bookmarks with AI-powered search and chat.
+A native macOS app for managing your Twitter/X bookmarks with AI-powered search and chat, paired with a Chrome extension for exporting bookmarks from Twitter.
 
 ## Features
 
-### Core
+### macOS App
 - **Beautiful dark UI** with glassmorphism design
 - **Full-text search** across all bookmarks
 - **Semantic search** - find bookmarks by meaning, not just keywords
@@ -20,66 +20,87 @@ A native macOS app for managing your Twitter/X bookmarks with AI-powered search 
 - **Inline tweet previews** - cited tweets appear as compact cards
 - **Follow-up suggestions** - clickable questions after each response
 - **Quick actions** - add sources to folders, apply tags, copy responses
-- **Conversation history** - continue previous chats
+
+### Chrome Extension
+- **One-click export** from Twitter bookmarks page
+- **Auto-scroll** to capture all bookmarks
+- **Continue from last export** - resume where you left off
+- **Captures full tweet data** - text, author, date, media URLs
 
 ## Requirements
 
 - macOS 14.0+
 - Claude API key (for AI features)
+- Chrome/Brave browser (for extension)
 
 ## Installation
 
-### From Release
+### macOS App
+
+**From Release:**
 1. Download `BookmarkManager.dmg` from [Releases](../../releases)
 2. Open the DMG and drag to Applications
-3. Open the app and add your Claude API key in Settings
+3. Add your Claude API key in Settings
 
-### Build from Source
+**Build from Source:**
 ```bash
 git clone https://github.com/swin0420/BookmarkManager.git
 cd BookmarkManager
 xcodebuild -scheme BookmarkManager -configuration Release build
 ```
 
+### Chrome Extension
+
+1. Open Chrome and go to `chrome://extensions`
+2. Enable **Developer mode** (toggle in top right)
+3. Click **Load unpacked**
+4. Select the `extension` folder from this repo
+
 ## Usage
 
-### Importing Bookmarks
-1. Export bookmarks from Twitter using a compatible extension
-2. Click **File → Import** or drag JSON file into the app
+### Exporting Bookmarks
+
+1. Go to [x.com/i/bookmarks](https://x.com/i/bookmarks) in Chrome
+2. Click the extension icon in toolbar
+3. Configure options:
+   - **Auto-scroll** - automatically load more bookmarks
+   - **Continue from last export** - skip already exported
+4. Click **Export** and save the JSON file
+
+### Importing to App
+
+1. Open BookmarkManager
+2. Click **File → Import** or drag JSON into the app
 3. Duplicates are automatically handled
 
 ### Using Scout AI
-1. Click the **sparkles icon** in the header to open Scout
+
+1. Click the **sparkles icon** to open Scout
 2. Ask questions like:
    - "What are people saying about AI?"
    - "Show me tweets from @username"
    - "Summarize the tech tweets from last week"
 3. Click follow-up suggestions or type new questions
-4. Use quick actions to organize sources
 
-### Organizing Bookmarks
+### Organizing
+
 - **Create folders** - click + next to Folders in sidebar
 - **Create tags** - click + next to Tags in sidebar
-- **Move to folder** - right-click bookmark or use bulk actions
-- **Add tags** - right-click bookmark or use bulk actions
+- **Move/tag** - right-click bookmark or use bulk actions
 
 ## Project Structure
 
 ```
 BookmarkManager/
-├── Models/           # Bookmark, Tag, Folder
-├── Database/         # SQLite via DatabaseManager
-├── Services/
-│   ├── ClaudeAPIService    # Claude API + SSE streaming
-│   ├── RAGService          # AI search pipeline
-│   ├── SemanticSearchService
-│   └── EmbeddingService
-├── Views/
-│   ├── AI/           # ChatView, AISettingsView
-│   ├── SidebarView
-│   ├── BookmarkGridView
-│   └── FilterBarView
-└── Styles/           # GlassmorphismStyle
+├── BookmarkManager/      # macOS SwiftUI app
+│   ├── Models/
+│   ├── Database/
+│   ├── Services/         # Claude API, RAG, Search
+│   └── Views/
+└── extension/            # Chrome extension
+    ├── manifest.json
+    ├── popup.html
+    └── popup.js
 ```
 
 ## Data Privacy

@@ -42,7 +42,10 @@ A native macOS app for managing your Twitter/X bookmarks with AI-powered search 
 **From Release:**
 1. Download `BookmarkManager.dmg` from [Releases](../../releases)
 2. Open the DMG and drag to Applications
-3. Add your Claude API key in Settings
+3. **First launch**: macOS may block the app. To open it:
+   - Right-click the app → "Open" → click "Open" in the dialog, OR
+   - Go to System Settings → Privacy & Security → scroll down and click "Open Anyway"
+4. Add your Claude API key in Settings
 
 **Build from Source:**
 ```bash

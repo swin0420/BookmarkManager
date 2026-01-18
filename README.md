@@ -16,7 +16,7 @@ A native macOS app for managing your Twitter/X bookmarks with AI-powered search 
 - **Bulk actions** - select multiple bookmarks to move, tag, or delete
 - **Media preview** - see images and video thumbnails inline
 
-### Scout AI Chat
+### Scout AI Chat (optional)
 - **Natural language queries** - ask questions about your bookmarks
 - **Streaming responses** - see answers generate in real-time
 - **Inline tweet previews** - cited tweets appear as compact cards
@@ -33,7 +33,7 @@ A native macOS app for managing your Twitter/X bookmarks with AI-powered search 
 
 - macOS 14.0+
 - Claude API key (for AI features)
-- Chrome/Brave browser (for extension)
+- Chromium-based browser (Chrome, Edge, etc.) for extension
 
 ## Installation
 

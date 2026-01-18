@@ -47,3 +47,151 @@ Tables: `bookmarks`, `folders`, `tags`, `bookmark_tags`, `chat_history`, `embedd
 ## UI
 
 Dark theme, purple/cyan gradients, glassmorphism. App icon: bookmark + sparkles.
+
+---
+
+## State Machine Diagrams
+
+### Scout Chat States
+
+```
+                              ┌─────────────┐
+                              │    IDLE     │
+                              │  (Welcome)  │
+                              └──────┬──────┘
+                                     │ user sends message
+                                     ▼
+                              ┌─────────────┐
+                              │   PARSING   │
+                              │ "Understanding│
+                              │   query..."  │
+                              └──────┬──────┘
+                                     │ keywords extracted
+                                     ▼
+                              ┌─────────────┐
+                              │  SEARCHING  │
+                              │ "Searching  │
+                              │ bookmarks..." │
+                              └──────┬──────┘
+                                     │ sources found
+                                     ▼
+                              ┌─────────────┐
+                              │  THINKING   │
+                              │ "Generating │
+                              │  answer..." │
+                              └──────┬──────┘
+                                     │ first chunk arrives
+                                     ▼
+                              ┌─────────────┐
+                              │  STREAMING  │
+                              │ text appears │
+                              │ + cursor    │
+                              └──────┬──────┘
+                                     │ stream complete
+                                     ▼
+                              ┌─────────────┐
+                              │  COMPLETE   │
+                              │ full message │
+                              │ + follow-ups │
+                              └──────┬──────┘
+                                     │
+                      ┌──────────────┴──────────────┐
+                      ▼                              ▼
+               [user asks]                    [click follow-up]
+               new question                      question
+                      │                              │
+                      └──────────────┬───────────────┘
+                                     ▼
+                                 PARSING
+```
+
+### RAG Pipeline
+
+```
+  Question
+     │
+     ▼
+┌──────────┐    keywords,     ┌──────────┐    relevant    ┌──────────┐
+│  PARSE   │───dates, authors─▶│  SEARCH  │────bookmarks──▶│ CONTEXT  │
+│  QUERY   │                  │BOOKMARKS │               │  BUILD   │
+└──────────┘                  └──────────┘               └────┬─────┘
+     │                              │                         │
+  Haiku LLM                   Keyword +                  Format for
+                              Semantic                     Claude
+                                                             │
+                                                             ▼
+┌──────────┐    clean answer  ┌──────────┐    stream     ┌──────────┐
+│  PARSE   │◀───+ follow-ups──│ GENERATE │◀───chunks─────│  CALL    │
+│ RESPONSE │                  │  ANSWER  │               │  CLAUDE  │
+└────┬─────┘                  └──────────┘               └──────────┘
+     │
+     ▼
+   SAVE HISTORY
+```
+
+### Streaming Connection
+
+```
+┌────────────┐
+│   IDLE     │
+└─────┬──────┘
+      │ streamConversation() called
+      ▼
+┌────────────┐
+│ CONNECTING │──────────────────┐
+└─────┬──────┘                  │
+      │ HTTP 200                │ HTTP 429
+      ▼                         ▼
+┌────────────┐            ┌────────────┐
+│ STREAMING  │            │RATE LIMITED│
+│            │            └────────────┘
+│  Buffer    │                  │
+│    ↓       │                  ▼
+│ parse SSE  │            ┌────────────┐
+│    ↓       │            │   ERROR    │
+│ onChunk()  │            └────────────┘
+└─────┬──────┘
+      │ [DONE]
+      ▼
+┌────────────┐
+│ COMPLETE   │
+└────────────┘
+```
+
+### Bookmark View States
+
+```
+                    ┌──────────────┐
+                    │    NORMAL    │
+                    │   (browse)   │
+                    └───────┬──────┘
+                            │
+         ┌──────────────────┼──────────────────┐
+         ▼                  ▼                  ▼
+  ┌────────────┐    ┌────────────┐    ┌────────────┐
+  │ SELECTION  │    │  FILTERED  │    │ SEARCHING  │
+  │    MODE    │    │   (folder/ │    │  (query)   │
+  │ (bulk ops) │    │    tag)    │    │            │
+  └─────┬──────┘    └─────┬──────┘    └─────┬──────┘
+        │                 │                 │
+        └─────────────────┴─────────────────┘
+                          │
+                          ▼
+                   ┌────────────┐
+                   │  CONTEXT   │
+                   │   MENU     │──▶ Move / Tag / Favorite / Delete
+                   └────────────┘
+```
+
+### Database Import
+
+```
+┌─────────┐   import    ┌──────────┐   process   ┌─────────────┐
+│  IDLE   │────JSON────▶│ IMPORTING│────each────▶│  UPSERTING  │
+└─────────┘             └──────────┘   bookmark  └──────┬──────┘
+                                                       │
+                                                       ▼
+                                    ┌──────────┐  notify   ┌─────────┐
+                                    │  DONE    │──views───▶│ REFRESH │
+                                    └──────────┘           └─────────┘
+```

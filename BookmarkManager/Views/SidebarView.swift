@@ -9,6 +9,9 @@ struct SidebarView: View {
     @State private var showSettingsSheet = false
     @State private var showChatSheet = false
     @State private var showBatchProcessingSheet = false
+    @State private var showEmbeddingSheet = false
+    @State private var embeddingProgress: (current: Int, total: Int)?
+    @State private var isGeneratingEmbeddings = false
     @State private var foldersExpanded = true
     @State private var tagsExpanded = true
     @State private var smartCollectionsExpanded = true
@@ -109,7 +112,7 @@ struct SidebarView: View {
                                     .foregroundColor(.purple)
                                     .frame(width: 20)
 
-                                Text("Chat with Bookmarks")
+                                Text("Scout")
                                     .font(.system(size: 13))
                                     .foregroundColor(.white.opacity(0.8))
 
@@ -157,6 +160,63 @@ struct SidebarView: View {
                             )
                         }
                         .buttonStyle(.plain)
+
+                        Button(action: { startEmbeddingGeneration() }) {
+                            HStack(spacing: 10) {
+                                Image(systemName: "magnifyingglass.circle")
+                                    .font(.system(size: 14))
+                                    .foregroundColor(.cyan)
+                                    .frame(width: 20)
+
+                                Text("Build Search Index")
+                                    .font(.system(size: 13))
+                                    .foregroundColor(.white.opacity(0.8))
+
+                                Spacer()
+
+                                if isGeneratingEmbeddings, let progress = embeddingProgress {
+                                    Text("\(progress.current)/\(progress.total)")
+                                        .font(.system(size: 11, weight: .medium))
+                                        .foregroundColor(.cyan)
+                                        .padding(.horizontal, 8)
+                                        .padding(.vertical, 3)
+                                        .background(
+                                            Capsule()
+                                                .fill(Color.cyan.opacity(0.2))
+                                        )
+                                } else {
+                                    let missing = SemanticSearchService.shared.missingEmbeddingCount()
+                                    if missing > 0 {
+                                        Text("\(missing)")
+                                            .font(.system(size: 11, weight: .medium))
+                                            .foregroundColor(.cyan)
+                                            .padding(.horizontal, 8)
+                                            .padding(.vertical, 3)
+                                            .background(
+                                                Capsule()
+                                                    .fill(Color.cyan.opacity(0.2))
+                                            )
+                                    } else {
+                                        Image(systemName: "checkmark.circle.fill")
+                                            .font(.system(size: 12))
+                                            .foregroundColor(.green)
+                                    }
+                                }
+                            }
+                            .padding(.horizontal, 12)
+                            .padding(.vertical, 8)
+                            .background(
+                                RoundedRectangle(cornerRadius: 8)
+                                    .fill(Color.clear)
+                            )
+                        }
+                        .buttonStyle(.plain)
+                        .disabled(isGeneratingEmbeddings)
+                        .contextMenu {
+                            Button(action: { rebuildEmbeddingIndex() }) {
+                                Label("Rebuild Entire Index", systemImage: "arrow.clockwise")
+                            }
+                        }
                     }
 
                     // Folders section
@@ -360,6 +420,34 @@ struct SidebarView: View {
         .sheet(isPresented: $showBatchProcessingSheet) {
             BatchProcessingView(mode: .summarize)
         }
+    }
+
+    private func startEmbeddingGeneration() {
+        guard !isGeneratingEmbeddings else { return }
+
+        isGeneratingEmbeddings = true
+        embeddingProgress = (0, SemanticSearchService.shared.missingEmbeddingCount())
+
+        SemanticSearchService.shared.generateMissingEmbeddings(
+            onProgress: { current, total in
+                embeddingProgress = (current, total)
+            },
+            onComplete: {
+                isGeneratingEmbeddings = false
+                embeddingProgress = nil
+            }
+        )
+    }
+
+    private func rebuildEmbeddingIndex() {
+        guard !isGeneratingEmbeddings else { return }
+
+        // Delete all embeddings first
+        dbManager.deleteAllEmbeddings()
+        SemanticSearchService.shared.clearCache()
+
+        // Then regenerate all
+        startEmbeddingGeneration()
     }
 
     private func importDatabase() {

@@ -6,6 +6,11 @@ class SemanticSearchService {
     private let embeddingService = EmbeddingService.shared
     private let dbManager = DatabaseManager.shared
 
+    // Cache embeddings in memory to avoid repeated DB reads
+    private var cachedEmbeddings: [DatabaseManager.StoredEmbedding]?
+    private var cacheTimestamp: Date?
+    private let cacheValiditySeconds: TimeInterval = 60  // Refresh cache every 60 seconds
+
     private init() {}
 
     // MARK: - Public API
@@ -13,6 +18,12 @@ class SemanticSearchService {
     /// Check if semantic search is available
     var isAvailable: Bool {
         return embeddingService.isAvailable
+    }
+
+    /// Clear the embeddings cache (call after generating new embeddings)
+    func clearCache() {
+        cachedEmbeddings = nil
+        cacheTimestamp = nil
     }
 
     /// Perform semantic search
@@ -23,8 +34,8 @@ class SemanticSearchService {
             return []
         }
 
-        // Load all embeddings from database
-        let embeddings = dbManager.loadAllEmbeddings()
+        // Load embeddings (from cache if available)
+        let embeddings = loadEmbeddingsWithCache()
 
         guard !embeddings.isEmpty else {
             print("No embeddings in database")
@@ -37,10 +48,25 @@ class SemanticSearchService {
             queryVector: queryVector,
             candidates: candidates,
             topK: limit,
-            threshold: 0.25  // Lower threshold for more results
+            threshold: 0.25
         )
 
         return results.map { SemanticSearchResult(bookmarkId: $0.id, score: $0.score) }
+    }
+
+    private func loadEmbeddingsWithCache() -> [DatabaseManager.StoredEmbedding] {
+        // Check if cache is valid
+        if let cached = cachedEmbeddings,
+           let timestamp = cacheTimestamp,
+           Date().timeIntervalSince(timestamp) < cacheValiditySeconds {
+            return cached
+        }
+
+        // Reload from database
+        let embeddings = dbManager.loadAllEmbeddings()
+        cachedEmbeddings = embeddings
+        cacheTimestamp = Date()
+        return embeddings
     }
 
     /// Generate and store embedding for a single bookmark
@@ -80,7 +106,9 @@ class SemanticSearchService {
                 }
             }
 
+            // Clear cache so new embeddings are picked up
             await MainActor.run {
+                clearCache()
                 onComplete()
             }
         }

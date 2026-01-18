@@ -57,6 +57,7 @@ struct BookmarkCardView: View {
     @State private var showTagSuggestions = false
     @State private var tagSuggestions: [AIService.TagSuggestion] = []
     @State private var isLoadingTags = false
+    @State private var localSummary: String?
 
     var isSelected: Bool {
         appState.selectedBookmarkIds.contains(bookmark.id)
@@ -151,22 +152,28 @@ struct BookmarkCardView: View {
                 showDetailSheet = true
             }
 
-            // AI Summary
-            if let summary = bookmark.summary, !summary.isEmpty {
-                HStack(alignment: .top, spacing: 6) {
-                    Image(systemName: "sparkles")
-                        .font(.system(size: 10))
-                        .foregroundColor(.purple)
-                    Text(summary)
-                        .font(.system(size: 11))
-                        .foregroundColor(.purple.opacity(0.9))
-                        .lineLimit(3)
+            // AI Summary (use localSummary for immediate updates, fallback to bookmark.summary)
+            if let summary = localSummary ?? bookmark.summary, !summary.isEmpty {
+                Button(action: { showDetailSheet = true }) {
+                    HStack(alignment: .top, spacing: 6) {
+                        Image(systemName: "sparkles")
+                            .font(.system(size: 10))
+                            .foregroundColor(.purple)
+                        Text(summary)
+                            .font(.system(size: 11))
+                            .foregroundColor(.purple.opacity(0.9))
+                            .lineLimit(3)
+                            .multilineTextAlignment(.leading)
+                        Spacer(minLength: 0)
+                    }
+                    .padding(8)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .background(
+                        RoundedRectangle(cornerRadius: 8)
+                            .fill(Color.purple.opacity(0.1))
+                    )
                 }
-                .padding(8)
-                .background(
-                    RoundedRectangle(cornerRadius: 8)
-                        .fill(Color.purple.opacity(0.1))
-                )
+                .buttonStyle(.plain)
             }
 
             // Media - enhanced grid
@@ -312,7 +319,7 @@ struct BookmarkCardView: View {
             }
         }
         .sheet(isPresented: $showDetailSheet) {
-            BookmarkDetailSheet(bookmark: bookmark, accentColor: accentColor)
+            BookmarkDetailSheet(bookmark: bookmark, accentColor: accentColor, overrideSummary: localSummary)
         }
     }
 
@@ -336,6 +343,9 @@ struct BookmarkCardView: View {
                     authorName: bookmark.authorName
                 )
                 await MainActor.run {
+                    // Update local state immediately for instant UI feedback
+                    localSummary = summary
+                    // Also persist to database
                     dbManager.updateSummary(bookmark.id, summary: summary)
                     isGeneratingSummary = false
                 }
@@ -379,10 +389,10 @@ struct BookmarkCardView: View {
         if let existingTag = dbManager.tags.first(where: { $0.name.lowercased() == suggestion.name.lowercased() }) {
             dbManager.addTagToBookmark(bookmark.id, tagId: existingTag.id)
         } else {
-            // Create new tag and add it
+            // Create new tag as a quick tag so it shows in sidebar
             let colors = ["#ef4444", "#f59e0b", "#22c55e", "#3b82f6", "#8b5cf6", "#ec4899"]
             let randomColor = colors.randomElement() ?? "#6b7280"
-            dbManager.createTag(name: suggestion.name, color: randomColor, isQuickTag: false)
+            dbManager.createTag(name: suggestion.name, color: randomColor, isQuickTag: true)
 
             // Find the newly created tag and add it
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
@@ -398,8 +408,13 @@ struct BookmarkCardView: View {
 struct BookmarkDetailSheet: View {
     let bookmark: Bookmark
     let accentColor: Color
+    var overrideSummary: String? = nil
     @Environment(\.dismiss) private var dismiss
     @EnvironmentObject var dbManager: DatabaseManager
+
+    private var displaySummary: String? {
+        overrideSummary ?? bookmark.summary
+    }
 
     var body: some View {
         VStack(spacing: 0) {
@@ -460,6 +475,30 @@ struct BookmarkDetailSheet: View {
                         .lineSpacing(6)
                         .textSelection(.enabled)
                         .frame(maxWidth: .infinity, alignment: .leading)
+
+                    // AI Summary (full text)
+                    if let summary = displaySummary, !summary.isEmpty {
+                        VStack(alignment: .leading, spacing: 8) {
+                            HStack(spacing: 6) {
+                                Image(systemName: "sparkles")
+                                    .font(.system(size: 12))
+                                    .foregroundColor(.purple)
+                                Text("AI Summary")
+                                    .font(.system(size: 12, weight: .semibold))
+                                    .foregroundColor(.purple)
+                            }
+                            Text(summary)
+                                .font(.system(size: 13))
+                                .foregroundColor(.purple.opacity(0.9))
+                                .textSelection(.enabled)
+                                .frame(maxWidth: .infinity, alignment: .leading)
+                        }
+                        .padding(12)
+                        .background(
+                            RoundedRectangle(cornerRadius: 10)
+                                .fill(Color.purple.opacity(0.15))
+                        )
+                    }
 
                     // Media images
                     if !bookmark.mediaUrls.isEmpty {

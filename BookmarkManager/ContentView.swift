@@ -297,10 +297,14 @@ struct MainContentView: View {
         DispatchQueue.global(qos: .userInitiated).async {
             var results: [Bookmark] = []
 
-            // Check if semantic search is enabled and we have a query
-            if appState.isSemanticSearchEnabled && !appState.searchQuery.isEmpty {
-                // Use semantic search
-                let searchResults = SemanticSearchService.shared.search(query: appState.searchQuery, limit: 100)
+            // Check if semantic search is enabled, we have a query, and we're in All Bookmarks
+            let canUseSemanticSearch = appState.isSemanticSearchEnabled &&
+                                        !appState.searchQuery.isEmpty &&
+                                        appState.selectedSection == .allBookmarks
+
+            if canUseSemanticSearch {
+                // Use semantic search (unlimited)
+                let searchResults = SemanticSearchService.shared.search(query: appState.searchQuery, limit: 10000)
                 let bookmarkIds = searchResults.map { $0.bookmarkId }
 
                 // Fetch bookmarks by IDs while preserving order
@@ -329,6 +333,7 @@ struct MainContentView: View {
                         }
                     }
                 }
+                // Semantic search: keep relevance order, don't sort
             } else {
                 // Regular search
                 switch appState.selectedSection {
@@ -367,7 +372,7 @@ struct MainContentView: View {
                     )
                 }
 
-                // Apply sorting (semantic search preserves relevance order)
+                // Apply sorting only for regular search (not semantic)
                 results = sortBookmarks(results)
             }
 

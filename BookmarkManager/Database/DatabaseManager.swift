@@ -822,6 +822,13 @@ class DatabaseManager: ObservableObject {
         return count > 0
     }
 
+    func deleteAllEmbeddings() {
+        executeSQL("DELETE FROM bookmark_embeddings")
+        DispatchQueue.main.async {
+            self.dataVersion += 1
+        }
+    }
+
     // MARK: - Chat Messages
 
     struct ChatMessage {

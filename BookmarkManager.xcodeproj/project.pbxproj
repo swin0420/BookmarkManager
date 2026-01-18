@@ -27,6 +27,7 @@
 		A1000030 /* AISettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2000030; };
 		A1000031 /* BatchProcessingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2000031; };
 		A1000032 /* ChatView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2000032; };
+		A1000040 /* AppIcon.icns in Resources */ = {isa = PBXBuildFile; fileRef = A2000040; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -52,6 +53,7 @@
 		A2000032 /* ChatView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChatView.swift; sourceTree = "<group>"; };
 		A3000001 /* BookmarkManager.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = BookmarkManager.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		A3000002 /* BookmarkManager.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = BookmarkManager.entitlements; sourceTree = "<group>"; };
+		A2000040 /* AppIcon.icns */ = {isa = PBXFileReference; lastKnownFileType = image.icns; path = AppIcon.icns; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -84,6 +86,7 @@
 				A5000006 /* Views */,
 				A5000007 /* Styles */,
 				A2000012 /* Assets.xcassets */,
+				A2000040 /* AppIcon.icns */,
 				A3000002 /* BookmarkManager.entitlements */,
 			);
 			path = BookmarkManager;
@@ -216,6 +219,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				A1000012 /* Assets.xcassets in Resources */,
+				A1000040 /* AppIcon.icns in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

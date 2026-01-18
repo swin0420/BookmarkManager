@@ -22,6 +22,7 @@ class ClaudeAPIService {
         let max_tokens: Int
         let messages: [Message]
         let system: String?
+        let stream: Bool?
     }
 
     struct APIResponse: Codable {
@@ -90,7 +91,8 @@ class ClaudeAPIService {
             model: model.rawValue,
             max_tokens: maxTokens,
             messages: [Message(role: "user", content: prompt)],
-            system: systemPrompt
+            system: systemPrompt,
+            stream: nil
         )
 
         return try await makeRequest(request, apiKey: apiKey)
@@ -111,10 +113,99 @@ class ClaudeAPIService {
             model: model.rawValue,
             max_tokens: maxTokens,
             messages: messages,
-            system: systemPrompt
+            system: systemPrompt,
+            stream: nil
         )
 
         return try await makeRequest(request, apiKey: apiKey)
+    }
+
+    /// Stream a conversation with multiple messages, calling onChunk for each text delta
+    func streamConversation(
+        messages: [Message],
+        systemPrompt: String? = nil,
+        model: Model = .sonnet,
+        maxTokens: Int = 2048,
+        onChunk: @escaping (String) -> Void
+    ) async throws -> String {
+        guard let apiKey = KeychainService.shared.getClaudeAPIKey() else {
+            throw ClaudeError.noAPIKey
+        }
+
+        var urlRequest = URLRequest(url: URL(string: baseURL)!)
+        urlRequest.httpMethod = "POST"
+        urlRequest.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        urlRequest.setValue(apiKey, forHTTPHeaderField: "x-api-key")
+        urlRequest.setValue(apiVersion, forHTTPHeaderField: "anthropic-version")
+
+        let request = APIRequest(
+            model: model.rawValue,
+            max_tokens: maxTokens,
+            messages: messages,
+            system: systemPrompt,
+            stream: true
+        )
+
+        let encoder = JSONEncoder()
+        urlRequest.httpBody = try encoder.encode(request)
+
+        let (bytes, response) = try await URLSession.shared.bytes(for: urlRequest)
+
+        guard let httpResponse = response as? HTTPURLResponse else {
+            throw ClaudeError.invalidResponse
+        }
+
+        if httpResponse.statusCode == 429 {
+            throw ClaudeError.rateLimited
+        }
+
+        if httpResponse.statusCode != 200 {
+            // Read error body for non-streaming error response
+            var errorData = Data()
+            for try await byte in bytes {
+                errorData.append(byte)
+            }
+            if let errorResponse = try? JSONDecoder().decode(APIError.self, from: errorData) {
+                throw ClaudeError.apiError(errorResponse.error.message)
+            }
+            throw ClaudeError.apiError("HTTP \(httpResponse.statusCode)")
+        }
+
+        var fullResponse = ""
+        var buffer = ""
+
+        for try await byte in bytes {
+            buffer.append(Character(UnicodeScalar(byte)))
+
+            // Process complete lines (SSE format)
+            while let newlineIndex = buffer.firstIndex(of: "\n") {
+                let line = String(buffer[..<newlineIndex])
+                buffer = String(buffer[buffer.index(after: newlineIndex)...])
+
+                // Skip empty lines and event lines
+                guard line.hasPrefix("data: ") else { continue }
+
+                let jsonStr = String(line.dropFirst(6))
+
+                // Skip [DONE] marker
+                if jsonStr == "[DONE]" { continue }
+
+                // Parse the JSON
+                guard let jsonData = jsonStr.data(using: .utf8),
+                      let json = try? JSONSerialization.jsonObject(with: jsonData) as? [String: Any] else {
+                    continue
+                }
+
+                // Handle content_block_delta events
+                if let delta = json["delta"] as? [String: Any],
+                   let text = delta["text"] as? String {
+                    fullResponse += text
+                    onChunk(text)
+                }
+            }
+        }
+
+        return fullResponse
     }
 
     /// Test if the API key is valid
@@ -123,7 +214,8 @@ class ClaudeAPIService {
             model: Model.haiku.rawValue,
             max_tokens: 10,
             messages: [Message(role: "user", content: "Hi")],
-            system: nil
+            system: nil,
+            stream: nil
         )
 
         do {

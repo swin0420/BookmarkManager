@@ -3,34 +3,46 @@
 	archiveVersion = 1;
 	classes = {
 	};
-	objectVersion = 56;
+	objectVersion = 70;
 	objects = {
 
 /* Begin PBXBuildFile section */
-		A1000001 /* BookmarkManagerApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2000001; };
-		A1000002 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2000002; };
-		A1000003 /* Bookmark.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2000003; };
-		A1000004 /* Tag.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2000004; };
-		A1000005 /* Folder.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2000005; };
-		A1000006 /* DatabaseManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2000006; };
-		A1000007 /* GlassmorphismStyle.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2000007; };
-		A1000008 /* SidebarView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2000008; };
-		A1000009 /* FilterBarView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2000009; };
-		A1000011 /* BookmarkGridView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2000011; };
-		A1000012 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = A2000012; };
-		A1000020 /* KeychainService.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2000020; };
-		A1000021 /* ClaudeAPIService.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2000021; };
-		A1000022 /* AIService.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2000022; };
-		A1000023 /* EmbeddingService.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2000023; };
-		A1000024 /* SemanticSearchService.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2000024; };
-		A1000025 /* RAGService.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2000025; };
-		A1000030 /* AISettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2000030; };
-		A1000031 /* BatchProcessingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2000031; };
-		A1000032 /* ChatView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2000032; };
-		A1000040 /* AppIcon.icns in Resources */ = {isa = PBXBuildFile; fileRef = A2000040; };
+		A1000001 /* BookmarkManagerApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2000001 /* BookmarkManagerApp.swift */; };
+		A1000002 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2000002 /* ContentView.swift */; };
+		A1000003 /* Bookmark.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2000003 /* Bookmark.swift */; };
+		A1000004 /* Tag.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2000004 /* Tag.swift */; };
+		A1000005 /* Folder.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2000005 /* Folder.swift */; };
+		A1000006 /* DatabaseManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2000006 /* DatabaseManager.swift */; };
+		A1000007 /* GlassmorphismStyle.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2000007 /* GlassmorphismStyle.swift */; };
+		A1000008 /* SidebarView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2000008 /* SidebarView.swift */; };
+		A1000009 /* FilterBarView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2000009 /* FilterBarView.swift */; };
+		A1000011 /* BookmarkGridView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2000011 /* BookmarkGridView.swift */; };
+		A1000012 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = A2000012 /* Assets.xcassets */; };
+		A1000020 /* KeychainService.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2000020 /* KeychainService.swift */; };
+		A1000021 /* ClaudeAPIService.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2000021 /* ClaudeAPIService.swift */; };
+		A1000022 /* AIService.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2000022 /* AIService.swift */; };
+		A1000023 /* EmbeddingService.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2000023 /* EmbeddingService.swift */; };
+		A1000024 /* SemanticSearchService.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2000024 /* SemanticSearchService.swift */; };
+		A1000025 /* RAGService.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2000025 /* RAGService.swift */; };
+		A1000030 /* AISettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2000030 /* AISettingsView.swift */; };
+		A1000031 /* BatchProcessingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2000031 /* BatchProcessingView.swift */; };
+		A1000032 /* ChatView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2000032 /* ChatView.swift */; };
+		A1000040 /* AppIcon.icns in Resources */ = {isa = PBXBuildFile; fileRef = A2000040 /* AppIcon.icns */; };
 /* End PBXBuildFile section */
 
+/* Begin PBXContainerItemProxy section */
+		42F3E9BC2F1EA5AE003A6FF2 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = A8000001 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = A6000001;
+			remoteInfo = BookmarkManager;
+		};
+/* End PBXContainerItemProxy section */
+
 /* Begin PBXFileReference section */
+		42DFCD8C2F1ED4730025494C /* BookmarkManager.xctestplan */ = {isa = PBXFileReference; lastKnownFileType = text; path = BookmarkManager.xctestplan; sourceTree = "<group>"; };
+		42F3E9B82F1EA5AE003A6FF2 /* BookmarkManagerTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = BookmarkManagerTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		A2000001 /* BookmarkManagerApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BookmarkManagerApp.swift; sourceTree = "<group>"; };
 		A2000002 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
 		A2000003 /* Bookmark.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Bookmark.swift; sourceTree = "<group>"; };
@@ -51,12 +63,23 @@
 		A2000030 /* AISettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AISettingsView.swift; sourceTree = "<group>"; };
 		A2000031 /* BatchProcessingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BatchProcessingView.swift; sourceTree = "<group>"; };
 		A2000032 /* ChatView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChatView.swift; sourceTree = "<group>"; };
+		A2000040 /* AppIcon.icns */ = {isa = PBXFileReference; lastKnownFileType = image.icns; path = AppIcon.icns; sourceTree = "<group>"; };
 		A3000001 /* BookmarkManager.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = BookmarkManager.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		A3000002 /* BookmarkManager.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = BookmarkManager.entitlements; sourceTree = "<group>"; };
-		A2000040 /* AppIcon.icns */ = {isa = PBXFileReference; lastKnownFileType = image.icns; path = AppIcon.icns; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
+/* Begin PBXFileSystemSynchronizedRootGroup section */
+		42F3E9B92F1EA5AE003A6FF2 /* BookmarkManagerTests */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = BookmarkManagerTests; sourceTree = "<group>"; };
+/* End PBXFileSystemSynchronizedRootGroup section */
+
 /* Begin PBXFrameworksBuildPhase section */
+		42F3E9B52F1EA5AE003A6FF2 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		A4000001 /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
@@ -70,7 +93,9 @@
 		A5000001 = {
 			isa = PBXGroup;
 			children = (
+				42DFCD8C2F1ED4730025494C /* BookmarkManager.xctestplan */,
 				A5000002 /* BookmarkManager */,
+				42F3E9B92F1EA5AE003A6FF2 /* BookmarkManagerTests */,
 				A5000003 /* Products */,
 			);
 			sourceTree = "<group>";
@@ -96,6 +121,7 @@
 			isa = PBXGroup;
 			children = (
 				A3000001 /* BookmarkManager.app */,
+				42F3E9B82F1EA5AE003A6FF2 /* BookmarkManagerTests.xctest */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -163,6 +189,29 @@
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
+		42F3E9B72F1EA5AE003A6FF2 /* BookmarkManagerTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 42F3E9BE2F1EA5AE003A6FF2 /* Build configuration list for PBXNativeTarget "BookmarkManagerTests" */;
+			buildPhases = (
+				42F3E9B42F1EA5AE003A6FF2 /* Sources */,
+				42F3E9B52F1EA5AE003A6FF2 /* Frameworks */,
+				42F3E9B62F1EA5AE003A6FF2 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				42F3E9BD2F1EA5AE003A6FF2 /* PBXTargetDependency */,
+			);
+			fileSystemSynchronizedGroups = (
+				42F3E9B92F1EA5AE003A6FF2 /* BookmarkManagerTests */,
+			);
+			name = BookmarkManagerTests;
+			packageProductDependencies = (
+			);
+			productName = BookmarkManagerTests;
+			productReference = 42F3E9B82F1EA5AE003A6FF2 /* BookmarkManagerTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
 		A6000001 /* BookmarkManager */ = {
 			isa = PBXNativeTarget;
 			buildConfigurationList = A7000003 /* Build configuration list for PBXNativeTarget "BookmarkManager" */;
@@ -187,9 +236,13 @@
 			isa = PBXProject;
 			attributes = {
 				BuildIndependentTargetsInParallel = 1;
-				LastSwiftUpdateCheck = 1500;
-				LastUpgradeCheck = 1500;
+				LastSwiftUpdateCheck = 2620;
+				LastUpgradeCheck = 2620;
 				TargetAttributes = {
+					42F3E9B72F1EA5AE003A6FF2 = {
+						CreatedOnToolsVersion = 26.2;
+						TestTargetID = A6000001;
+					};
 					A6000001 = {
 						CreatedOnToolsVersion = 15.0;
 					};
@@ -209,11 +262,19 @@
 			projectRoot = "";
 			targets = (
 				A6000001 /* BookmarkManager */,
+				42F3E9B72F1EA5AE003A6FF2 /* BookmarkManagerTests */,
 			);
 		};
 /* End PBXProject section */
 
 /* Begin PBXResourcesBuildPhase section */
+		42F3E9B62F1EA5AE003A6FF2 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		A6000003 /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -226,6 +287,13 @@
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
+		42F3E9B42F1EA5AE003A6FF2 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		A6000002 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -254,7 +322,59 @@
 		};
 /* End PBXSourcesBuildPhase section */
 
+/* Begin PBXTargetDependency section */
+		42F3E9BD2F1EA5AE003A6FF2 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = A6000001 /* BookmarkManager */;
+			targetProxy = 42F3E9BC2F1EA5AE003A6FF2 /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
+
 /* Begin XCBuildConfiguration section */
+		42F3E9BF2F1EA5AE003A6FF2 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = B83389ZWH5;
+				GENERATE_INFOPLIST_FILE = YES;
+				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
+				MACOSX_DEPLOYMENT_TARGET = 26.1;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = xyz.BookmarkManagerTests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				STRING_CATALOG_GENERATE_SYMBOLS = NO;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/BookmarkManager.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/BookmarkManager";
+			};
+			name = Debug;
+		};
+		42F3E9C02F1EA5AE003A6FF2 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = B83389ZWH5;
+				GENERATE_INFOPLIST_FILE = YES;
+				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
+				MACOSX_DEPLOYMENT_TARGET = 26.1;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = xyz.BookmarkManagerTests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				STRING_CATALOG_GENERATE_SYMBOLS = NO;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/BookmarkManager.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/BookmarkManager";
+			};
+			name = Release;
+		};
 		A7000002 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
@@ -289,7 +409,9 @@
 				CLANG_WARN_UNREACHABLE_CODE = YES;
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				COPY_PHASE_STRIP = NO;
+				DEAD_CODE_STRIPPING = YES;
 				DEBUG_INFORMATION_FORMAT = dwarf;
+				DEVELOPMENT_TEAM = B83389ZWH5;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
 				ENABLE_TESTABILITY = YES;
 				ENABLE_USER_SCRIPT_SANDBOXING = YES;
@@ -312,6 +434,7 @@
 				MTL_FAST_MATH = YES;
 				ONLY_ACTIVE_ARCH = YES;
 				SDKROOT = macosx;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "DEBUG $(inherited)";
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 			};
@@ -351,7 +474,9 @@
 				CLANG_WARN_UNREACHABLE_CODE = YES;
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				COPY_PHASE_STRIP = NO;
+				DEAD_CODE_STRIPPING = YES;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				DEVELOPMENT_TEAM = B83389ZWH5;
 				ENABLE_NS_ASSERTIONS = NO;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
 				ENABLE_USER_SCRIPT_SANDBOXING = YES;
@@ -367,6 +492,7 @@
 				MTL_ENABLE_DEBUG_INFO = NO;
 				MTL_FAST_MATH = YES;
 				SDKROOT = macosx;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
 				SWIFT_COMPILATION_MODE = wholemodule;
 			};
 			name = Release;
@@ -377,22 +503,31 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_ENTITLEMENTS = BookmarkManager/BookmarkManager.entitlements;
+				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
 				CURRENT_PROJECT_VERSION = 1;
+				DEAD_CODE_STRIPPING = YES;
 				DEVELOPMENT_ASSET_PATHS = "";
+				ENABLE_APP_SANDBOX = YES;
+				ENABLE_OUTGOING_NETWORK_CONNECTIONS = YES;
 				ENABLE_PREVIEWS = YES;
+				ENABLE_USER_SELECTED_FILES = readwrite;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = BookmarkManager/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = "Bookmark manager";
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.productivity";
 				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = UIInterfaceOrientationPortrait;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/../Frameworks",
 				);
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = com.bookmarkmanager.app;
+				PRODUCT_BUNDLE_IDENTIFIER = com.nekonyya.bookmarkmanager;
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				SUPPORTED_PLATFORMS = macosx;
+				SUPPORTS_MACCATALYST = NO;
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_VERSION = 5.0;
 			};
@@ -404,22 +539,31 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_ENTITLEMENTS = BookmarkManager/BookmarkManager.entitlements;
+				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
 				CURRENT_PROJECT_VERSION = 1;
+				DEAD_CODE_STRIPPING = YES;
 				DEVELOPMENT_ASSET_PATHS = "";
+				ENABLE_APP_SANDBOX = YES;
+				ENABLE_OUTGOING_NETWORK_CONNECTIONS = YES;
 				ENABLE_PREVIEWS = YES;
+				ENABLE_USER_SELECTED_FILES = readwrite;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = BookmarkManager/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = "Bookmark manager";
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.productivity";
 				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = UIInterfaceOrientationPortrait;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/../Frameworks",
 				);
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = com.bookmarkmanager.app;
+				PRODUCT_BUNDLE_IDENTIFIER = com.nekonyya.bookmarkmanager;
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				SUPPORTED_PLATFORMS = macosx;
+				SUPPORTS_MACCATALYST = NO;
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_VERSION = 5.0;
 			};
@@ -428,6 +572,15 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
+		42F3E9BE2F1EA5AE003A6FF2 /* Build configuration list for PBXNativeTarget "BookmarkManagerTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				42F3E9BF2F1EA5AE003A6FF2 /* Debug */,
+				42F3E9C02F1EA5AE003A6FF2 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
 		A7000001 /* Build configuration list for PBXProject "BookmarkManager" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (

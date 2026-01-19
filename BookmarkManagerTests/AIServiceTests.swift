@@ -170,7 +170,7 @@ final class AIServiceTests: XCTestCase {
     }
 
     func testRateLimitCalculation() {
-        let lastRequestTime = Date()
+        _ = Date()
         let minRequestInterval: TimeInterval = 1.1
 
         // Simulate immediate request
@@ -239,7 +239,7 @@ final class AIServiceTests: XCTestCase {
 
     func testTagSuggestionPromptWithNoExistingTags() {
         let existingTags: [String] = []
-        let content = "New tweet content"
+        _ = "New tweet content"
 
         let existingTagsList = existingTags.isEmpty ? "none" : existingTags.joined(separator: ", ")
 

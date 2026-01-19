@@ -1,0 +1,30 @@
+{
+  "configurations" : [
+    {
+      "id" : "A6F6E416-6D2C-4555-A92D-2225F138CD89",
+      "name" : "Test Scheme Action",
+      "options" : {
+
+      }
+    }
+  ],
+  "defaultOptions" : {
+    "performanceAntipatternCheckerEnabled" : true,
+    "targetForVariableExpansion" : {
+      "containerPath" : "container:BookmarkManager.xcodeproj",
+      "identifier" : "A6000001",
+      "name" : "BookmarkManager"
+    }
+  },
+  "testTargets" : [
+    {
+      "parallelizable" : true,
+      "target" : {
+        "containerPath" : "container:BookmarkManager.xcodeproj",
+        "identifier" : "42F3E9B72F1EA5AE003A6FF2",
+        "name" : "BookmarkManagerTests"
+      }
+    }
+  ],
+  "version" : 1
+}

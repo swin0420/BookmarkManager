@@ -319,7 +319,11 @@ final class AIServiceTests: XCTestCase {
                     .replacingOccurrences(of: " ", with: "-")
                 suggestions.append(TagSuggestion(name: name, confidence: confidence))
             } else {
-                let name = trimmed.lowercased().replacingOccurrences(of: " ", with: "-")
+                // Use first part as name (handles "invalid|abc" case), or whole line if no separator
+                let namePart = parts.count >= 1 ? parts[0] : trimmed
+                let name = namePart.trimmingCharacters(in: .whitespaces)
+                    .lowercased()
+                    .replacingOccurrences(of: " ", with: "-")
                 suggestions.append(TagSuggestion(name: name, confidence: 0.7))
             }
         }

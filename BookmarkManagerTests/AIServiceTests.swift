@@ -47,10 +47,13 @@ final class AIServiceTests: XCTestCase {
         let suggestions = parseTagSuggestions(response)
 
         XCTAssertEqual(suggestions.count, 3)
+        // Results are sorted by confidence descending: ai(0.9), tutorial(0.8), coding(0.7)
         XCTAssertEqual(suggestions[0].name, "ai")
         XCTAssertEqual(suggestions[0].confidence, 0.9, accuracy: 0.001)
-        XCTAssertEqual(suggestions[1].name, "coding")
-        XCTAssertEqual(suggestions[1].confidence, 0.7, accuracy: 0.001)
+        XCTAssertEqual(suggestions[1].name, "tutorial")
+        XCTAssertEqual(suggestions[1].confidence, 0.8, accuracy: 0.001)
+        XCTAssertEqual(suggestions[2].name, "coding")
+        XCTAssertEqual(suggestions[2].confidence, 0.7, accuracy: 0.001)
     }
 
     func testParseTagSuggestionsEmptyResponse() {
@@ -118,7 +121,9 @@ final class AIServiceTests: XCTestCase {
 
         XCTAssertEqual(suggestions.count, 3)
         // Invalid confidence should default to 0.7
-        XCTAssertEqual(suggestions.first { $0.name == "invalid" }?.confidence, 0.7, accuracy: 0.001)
+        let invalidSuggestion = suggestions.first { $0.name == "invalid" }
+        XCTAssertNotNil(invalidSuggestion)
+        XCTAssertEqual(invalidSuggestion?.confidence ?? 0, 0.7, accuracy: 0.001)
     }
 
     // MARK: - Batch Progress Tests
@@ -314,7 +319,11 @@ final class AIServiceTests: XCTestCase {
                     .replacingOccurrences(of: " ", with: "-")
                 suggestions.append(TagSuggestion(name: name, confidence: confidence))
             } else {
-                let name = trimmed.lowercased().replacingOccurrences(of: " ", with: "-")
+                // Use first part as name (handles "invalid|abc" case), or whole line if no separator
+                let namePart = parts.count >= 1 ? parts[0] : trimmed
+                let name = namePart.trimmingCharacters(in: .whitespaces)
+                    .lowercased()
+                    .replacingOccurrences(of: " ", with: "-")
                 suggestions.append(TagSuggestion(name: name, confidence: 0.7))
             }
         }

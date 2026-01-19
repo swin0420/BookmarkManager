@@ -118,7 +118,9 @@ final class AIServiceTests: XCTestCase {
 
         XCTAssertEqual(suggestions.count, 3)
         // Invalid confidence should default to 0.7
-        XCTAssertEqual(suggestions.first { $0.name == "invalid" }?.confidence, 0.7, accuracy: 0.001)
+        let invalidSuggestion = suggestions.first { $0.name == "invalid" }
+        XCTAssertNotNil(invalidSuggestion)
+        XCTAssertEqual(invalidSuggestion?.confidence ?? 0, 0.7, accuracy: 0.001)
     }
 
     // MARK: - Batch Progress Tests

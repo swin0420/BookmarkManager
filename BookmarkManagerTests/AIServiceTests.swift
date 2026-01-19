@@ -47,10 +47,13 @@ final class AIServiceTests: XCTestCase {
         let suggestions = parseTagSuggestions(response)
 
         XCTAssertEqual(suggestions.count, 3)
+        // Results are sorted by confidence descending: ai(0.9), tutorial(0.8), coding(0.7)
         XCTAssertEqual(suggestions[0].name, "ai")
         XCTAssertEqual(suggestions[0].confidence, 0.9, accuracy: 0.001)
-        XCTAssertEqual(suggestions[1].name, "coding")
-        XCTAssertEqual(suggestions[1].confidence, 0.7, accuracy: 0.001)
+        XCTAssertEqual(suggestions[1].name, "tutorial")
+        XCTAssertEqual(suggestions[1].confidence, 0.8, accuracy: 0.001)
+        XCTAssertEqual(suggestions[2].name, "coding")
+        XCTAssertEqual(suggestions[2].confidence, 0.7, accuracy: 0.001)
     }
 
     func testParseTagSuggestionsEmptyResponse() {

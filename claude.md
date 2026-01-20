@@ -40,9 +40,44 @@ BookmarkManager/
 - `searchBookmarks()` - Keyword + semantic hybrid search
 - `ask()` / `askStreaming()` - Full RAG with context injection
 
+## SemanticSearchService (Hybrid Search)
+
+Uses hybrid search combining semantic similarity with keyword matching:
+
+```
+Hybrid Score = 0.6 × Semantic + 0.4 × Keyword
+```
+
+**Components:**
+- `EmbeddingService` - Apple NLEmbedding (512 dimensions, English)
+- Keyword scoring: content (1.0), author handle (1.5), author name (1.2)
+- Stopwords filtered, multiple occurrence bonus
+
+**Thresholds:**
+- Semantic: ≥0.15, Keyword: ≥0.3, Hybrid: ≥0.2
+
+**Caching:**
+- Embeddings cached 60 seconds
+- Bookmarks cached for keyword matching
+
 ## Database (SQLite)
 
 Tables: `bookmarks`, `folders`, `tags`, `bookmark_tags`, `chat_history`, `embeddings`
+
+### Threading
+- Database opened with `SQLITE_OPEN_FULLMUTEX` for thread-safe serialized mode
+- Background operations must capture `@EnvironmentObject` state on main thread before dispatch
+- Pattern used in `loadBookmarks()` and `refreshBookmarks()`:
+  ```swift
+  // Capture state on main thread
+  let searchQuery = appState.searchQuery
+  let sortOrder = appState.sortOrder
+  // ... other state
+
+  DispatchQueue.global(qos: .userInitiated).async {
+      // Use captured values, not appState directly
+  }
+  ```
 
 ## UI
 

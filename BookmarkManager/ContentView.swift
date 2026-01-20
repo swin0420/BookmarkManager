@@ -4,6 +4,9 @@ struct ContentView: View {
     @EnvironmentObject var appState: AppState
     @StateObject private var dbManager = DatabaseManager.shared
     @Environment(\.colorScheme) var colorScheme
+    #if os(iOS)
+    @State private var showDetail = false
+    #endif
 
     var body: some View {
         let themeColors = ThemeColors(colorScheme: colorScheme)
@@ -13,6 +16,14 @@ struct ContentView: View {
             themeColors.background
                 .ignoresSafeArea()
 
+            #if os(iOS)
+            NavigationStack {
+                SidebarView(showDetail: $showDetail)
+                    .navigationDestination(isPresented: $showDetail) {
+                        MainContentView()
+                    }
+            }
+            #else
             HSplitView {
                 SidebarView()
                     .frame(minWidth: 220, maxWidth: 280)
@@ -23,6 +34,7 @@ struct ContentView: View {
                     .clipped()
             }
             .clipped()
+            #endif
         }
         .environment(\.themeColors, themeColors)
         .preferredColorScheme(appState.preferredColorScheme)
@@ -93,11 +105,22 @@ struct MainContentView: View {
         VStack(spacing: 0) {
             // Header with drag area
             VStack(spacing: 0) {
+                #if os(macOS)
                 // Drag area for window
                 Color.clear
                     .frame(height: 38)
+                #endif
 
-                // Title and controls
+                #if os(iOS)
+                // iOS-optimized header
+                iOSHeaderView(
+                    title: title,
+                    bookmarkCount: bookmarks.count,
+                    accentColor: accentColor,
+                    themeColors: themeColors
+                )
+                #else
+                // macOS header - Title and controls
                 HStack {
                     VStack(alignment: .leading, spacing: 4) {
                         Text(title)
@@ -276,6 +299,7 @@ struct MainContentView: View {
                 FilterBarView(accentColor: accentColor)
                     .padding(.horizontal, 24)
                     .padding(.bottom, 16)
+                #endif
             }
             .background(
                 themeColors.sidebarBackground.opacity(0.5)
@@ -508,6 +532,204 @@ struct EmptyStateView: View {
         .frame(maxWidth: .infinity, minHeight: 300)
     }
 }
+
+// MARK: - iOS Header View
+#if os(iOS)
+struct iOSHeaderView: View {
+    @EnvironmentObject var appState: AppState
+    @EnvironmentObject var dbManager: DatabaseManager
+    let title: String
+    let bookmarkCount: Int
+    let accentColor: Color
+    let themeColors: ThemeColors
+
+    var body: some View {
+        VStack(spacing: 12) {
+            // Title row
+            HStack {
+                VStack(alignment: .leading, spacing: 2) {
+                    Text(title)
+                        .font(.system(size: 24, weight: .bold))
+                        .foregroundColor(themeColors.primaryText)
+                    Text("\(bookmarkCount) bookmarks")
+                        .font(.system(size: 13))
+                        .foregroundColor(themeColors.tertiaryText)
+                }
+                Spacer()
+
+                // Sort menu
+                Menu {
+                    ForEach(SortOrder.allCases, id: \.self) { order in
+                        Button {
+                            appState.sortOrder = order
+                        } label: {
+                            HStack {
+                                Text(order.rawValue)
+                                if appState.sortOrder == order {
+                                    Image(systemName: "checkmark")
+                                }
+                            }
+                        }
+                    }
+                } label: {
+                    Image(systemName: "arrow.up.arrow.down")
+                        .font(.system(size: 16))
+                        .foregroundColor(themeColors.tertiaryText)
+                        .frame(width: 36, height: 36)
+                        .background(RoundedRectangle(cornerRadius: 8).fill(themeColors.hoverBackground))
+                }
+
+                // Theme picker
+                Menu {
+                    ForEach(AppTheme.allCases, id: \.self) { theme in
+                        Button {
+                            appState.theme = theme
+                        } label: {
+                            HStack {
+                                Image(systemName: theme.icon)
+                                Text(theme.rawValue)
+                                if appState.theme == theme {
+                                    Image(systemName: "checkmark")
+                                }
+                            }
+                        }
+                    }
+                } label: {
+                    Image(systemName: appState.theme.icon)
+                        .font(.system(size: 16))
+                        .foregroundColor(themeColors.tertiaryText)
+                        .frame(width: 36, height: 36)
+                        .background(RoundedRectangle(cornerRadius: 8).fill(themeColors.hoverBackground))
+                }
+            }
+            .padding(.horizontal, 16)
+            .padding(.top, 8)
+
+            // Search bar
+            iOSFilterBarView(accentColor: accentColor, themeColors: themeColors)
+        }
+        .padding(.bottom, 12)
+    }
+}
+
+struct iOSFilterBarView: View {
+    @EnvironmentObject var appState: AppState
+    @EnvironmentObject var dbManager: DatabaseManager
+    let accentColor: Color
+    let themeColors: ThemeColors
+
+    var body: some View {
+        VStack(spacing: 10) {
+            // Search field row
+            HStack(spacing: 8) {
+                // Search field
+                HStack(spacing: 8) {
+                    Image(systemName: "magnifyingglass")
+                        .font(.system(size: 14))
+                        .foregroundColor(themeColors.mutedText)
+
+                    TextField(appState.isSemanticSearchEnabled ? "Search by meaning..." : "Search...", text: $appState.searchQuery)
+                        .font(.system(size: 15))
+                        .foregroundColor(themeColors.primaryText)
+
+                    if !appState.searchQuery.isEmpty {
+                        Button(action: { appState.searchQuery = "" }) {
+                            Image(systemName: "xmark.circle.fill")
+                                .font(.system(size: 14))
+                                .foregroundColor(themeColors.mutedText)
+                        }
+                    }
+                }
+                .padding(.horizontal, 12)
+                .padding(.vertical, 10)
+                .background(RoundedRectangle(cornerRadius: 10).fill(themeColors.inputBackground))
+
+                // Semantic search toggle (only in All Bookmarks)
+                if appState.selectedSection == .allBookmarks {
+                    Button(action: {
+                        withAnimation(.easeInOut(duration: 0.2)) {
+                            appState.isSemanticSearchEnabled.toggle()
+                        }
+                    }) {
+                        Image(systemName: "brain")
+                            .font(.system(size: 14))
+                            .foregroundColor(appState.isSemanticSearchEnabled ? .purple : themeColors.tertiaryText)
+                            .frame(width: 40, height: 40)
+                            .background(
+                                RoundedRectangle(cornerRadius: 10)
+                                    .fill(appState.isSemanticSearchEnabled ? Color.purple.opacity(0.2) : themeColors.hoverBackground)
+                            )
+                    }
+                }
+
+                // Author filter
+                Menu {
+                    Button("All Authors") {
+                        appState.selectedAuthor = nil
+                    }
+                    Divider()
+                    ForEach(dbManager.authors.prefix(50), id: \.self) { author in
+                        Button("@\(author)") {
+                            appState.selectedAuthor = author
+                        }
+                    }
+                } label: {
+                    Image(systemName: "person")
+                        .font(.system(size: 14))
+                        .foregroundColor(appState.selectedAuthor != nil ? accentColor : themeColors.tertiaryText)
+                        .frame(width: 40, height: 40)
+                        .background(
+                            RoundedRectangle(cornerRadius: 10)
+                                .fill(appState.selectedAuthor != nil ? accentColor.opacity(0.2) : themeColors.hoverBackground)
+                        )
+                }
+            }
+            .padding(.horizontal, 16)
+
+            // Show selected author if any
+            if let author = appState.selectedAuthor {
+                HStack {
+                    Text("@\(author)")
+                        .font(.system(size: 13, weight: .medium))
+                        .foregroundColor(accentColor)
+
+                    Button(action: { appState.selectedAuthor = nil }) {
+                        Image(systemName: "xmark.circle.fill")
+                            .font(.system(size: 12))
+                            .foregroundColor(themeColors.mutedText)
+                    }
+                }
+                .padding(.horizontal, 12)
+                .padding(.vertical, 6)
+                .background(RoundedRectangle(cornerRadius: 8).fill(accentColor.opacity(0.15)))
+                .padding(.horizontal, 16)
+            }
+
+            // Clear all filters button (if multiple filters active)
+            if !appState.searchQuery.isEmpty && (appState.selectedAuthor != nil || appState.dateFrom != nil || appState.dateTo != nil) {
+                Button(action: {
+                    appState.searchQuery = ""
+                    appState.selectedAuthor = nil
+                    appState.dateFrom = nil
+                    appState.dateTo = nil
+                }) {
+                    HStack(spacing: 4) {
+                        Image(systemName: "xmark")
+                            .font(.system(size: 10, weight: .bold))
+                        Text("Clear all filters")
+                            .font(.system(size: 13))
+                    }
+                    .foregroundColor(accentColor)
+                    .padding(.horizontal, 12)
+                    .padding(.vertical, 6)
+                    .background(RoundedRectangle(cornerRadius: 8).fill(accentColor.opacity(0.15)))
+                }
+                .padding(.horizontal, 16)
+            }
+        }
+    }
+}
+#endif
 
 #Preview {
     ContentView()

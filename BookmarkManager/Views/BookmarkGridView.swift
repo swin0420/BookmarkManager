@@ -1,4 +1,7 @@
 import SwiftUI
+#if os(iOS)
+import UIKit
+#endif
 
 struct BookmarkGridView: View {
     let bookmarks: [Bookmark]
@@ -6,42 +9,48 @@ struct BookmarkGridView: View {
     @EnvironmentObject var appState: AppState
     @EnvironmentObject var dbManager: DatabaseManager
 
-    private var column1: [Bookmark] {
-        stride(from: 0, to: bookmarks.count, by: 3).compactMap { bookmarks.indices.contains($0) ? bookmarks[$0] : nil }
-    }
+    #if os(iOS)
+    @Environment(\.horizontalSizeClass) var horizontalSizeClass
 
-    private var column2: [Bookmark] {
-        stride(from: 1, to: bookmarks.count, by: 3).compactMap { bookmarks.indices.contains($0) ? bookmarks[$0] : nil }
+    private var columnCount: Int {
+        // iPhone: 2 columns, iPad: 3 columns
+        horizontalSizeClass == .compact ? 2 : 3
     }
+    #else
+    private var columnCount: Int { 3 }
+    #endif
 
-    private var column3: [Bookmark] {
-        stride(from: 2, to: bookmarks.count, by: 3).compactMap { bookmarks.indices.contains($0) ? bookmarks[$0] : nil }
+    private func column(_ index: Int) -> [Bookmark] {
+        stride(from: index, to: bookmarks.count, by: columnCount).compactMap { bookmarks.indices.contains($0) ? bookmarks[$0] : nil }
     }
 
     var body: some View {
+        #if os(iOS)
+        HStack(alignment: .top, spacing: 10) {
+            ForEach(0..<columnCount, id: \.self) { columnIndex in
+                LazyVStack(spacing: 10) {
+                    ForEach(column(columnIndex)) { bookmark in
+                        BookmarkCardView(bookmark: bookmark, accentColor: accentColor)
+                    }
+                }
+                .frame(maxWidth: .infinity)
+            }
+        }
+        .padding(.horizontal, 12)
+        .padding(.vertical, 16)
+        #else
         HStack(alignment: .top, spacing: 16) {
-            LazyVStack(spacing: 16) {
-                ForEach(column1) { bookmark in
-                    BookmarkCardView(bookmark: bookmark, accentColor: accentColor)
+            ForEach(0..<columnCount, id: \.self) { columnIndex in
+                LazyVStack(spacing: 16) {
+                    ForEach(column(columnIndex)) { bookmark in
+                        BookmarkCardView(bookmark: bookmark, accentColor: accentColor)
+                    }
                 }
+                .frame(maxWidth: .infinity)
             }
-            .frame(maxWidth: .infinity)
-
-            LazyVStack(spacing: 16) {
-                ForEach(column2) { bookmark in
-                    BookmarkCardView(bookmark: bookmark, accentColor: accentColor)
-                }
-            }
-            .frame(maxWidth: .infinity)
-
-            LazyVStack(spacing: 16) {
-                ForEach(column3) { bookmark in
-                    BookmarkCardView(bookmark: bookmark, accentColor: accentColor)
-                }
-            }
-            .frame(maxWidth: .infinity)
         }
         .padding(24)
+        #endif
     }
 }
 
@@ -157,7 +166,8 @@ struct BookmarkCardView: View {
                 showDetailSheet = true
             }
 
-            // AI Summary (use localSummary for immediate updates, fallback to bookmark.summary)
+            #if os(macOS)
+            // AI Summary (macOS only - use localSummary for immediate updates, fallback to bookmark.summary)
             if let summary = localSummary ?? bookmark.summary, !summary.isEmpty {
                 Button(action: { showDetailSheet = true }) {
                     HStack(alignment: .top, spacing: 6) {
@@ -180,6 +190,7 @@ struct BookmarkCardView: View {
                 }
                 .buttonStyle(.plain)
             }
+            #endif
 
             // Media - enhanced grid
             if !bookmark.mediaUrls.isEmpty {
@@ -209,7 +220,51 @@ struct BookmarkCardView: View {
 
                 Spacer()
 
-                // Action buttons - always visible
+                #if os(iOS)
+                // iOS: Always visible, simplified actions (no AI features)
+                HStack(spacing: 12) {
+                    Button(action: { dbManager.toggleFavorite(bookmark.id) }) {
+                        Image(systemName: bookmark.isFavorite ? "star.fill" : "star")
+                            .font(.system(size: 15))
+                            .foregroundColor(bookmark.isFavorite ? .yellow : themeColors.mutedText)
+                    }
+                    .buttonStyle(.plain)
+
+                    // Folder menu
+                    Menu {
+                        Button("Remove from folder") {
+                            dbManager.setFolder(bookmark.id, folderId: nil)
+                        }
+                        Divider()
+                        ForEach(dbManager.folders) { folder in
+                            Button {
+                                dbManager.setFolder(bookmark.id, folderId: folder.id)
+                            } label: {
+                                HStack {
+                                    Circle().fill(folder.color).frame(width: 8, height: 8)
+                                    Text(folder.name)
+                                }
+                            }
+                        }
+                    } label: {
+                        Image(systemName: "folder")
+                            .font(.system(size: 15))
+                            .foregroundColor(themeColors.mutedText)
+                    }
+
+                    Button(action: {
+                        if let url = URL(string: bookmark.url) {
+                            UIApplication.shared.open(url)
+                        }
+                    }) {
+                        Image(systemName: "arrow.up.right.square")
+                            .font(.system(size: 15))
+                            .foregroundColor(themeColors.mutedText)
+                    }
+                    .buttonStyle(.plain)
+                }
+                #else
+                // macOS: Show on hover, full actions with AI features
                 HStack(spacing: 10) {
                     // AI Summarize button
                     Button(action: generateSummary) {
@@ -310,9 +365,14 @@ struct BookmarkCardView: View {
                     .buttonStyle(.plain)
                 }
                 .opacity(isHovered ? 1 : 0)
+                #endif
             }
         }
+        #if os(iOS)
+        .padding(12)
+        #else
         .padding(16)
+        #endif
         .glassCard(isHovered: isHovered)
         .overlay(
             RoundedRectangle(cornerRadius: 16)
@@ -575,7 +635,11 @@ struct BookmarkDetailSheet: View {
             // Bottom button
             Button(action: {
                 if let url = URL(string: bookmark.url) {
+                    #if os(iOS)
+                    UIApplication.shared.open(url)
+                    #else
                     NSWorkspace.shared.open(url)
+                    #endif
                 }
             }) {
                 HStack(spacing: 8) {
@@ -591,7 +655,9 @@ struct BookmarkDetailSheet: View {
             .buttonStyle(.plain)
             .padding(16)
         }
+        #if os(macOS)
         .frame(width: 500, height: 600)
+        #endif
         .background(themeColors.background)
     }
 

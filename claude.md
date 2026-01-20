@@ -1,6 +1,6 @@
 # BookmarkManager - Claude Context
 
-macOS SwiftUI app for managing Twitter/X bookmarks with AI-powered features.
+macOS and iOS SwiftUI app for managing Twitter/X bookmarks with AI-powered features (AI features macOS only).
 
 ## Architecture
 
@@ -69,11 +69,47 @@ struct ThemeColors {
 }
 ```
 
-## Drag and Drop
+## Drag and Drop (macOS)
 
 - Bookmark cards are draggable via `.draggable(bookmark.id)`
 - Folders accept drops via `.dropDestination(for: String.self)`
 - Drop on folder → moves bookmark to that folder
+
+---
+
+## iOS Platform Differences
+
+### Navigation
+- Uses `NavigationStack` with `navigationDestination` for sidebar → detail navigation
+- Tapping sidebar items sets `showDetail = true` to push detail view
+
+### UI Layout
+- **Header**: Compact `iOSHeaderView` with title, sort menu, theme picker
+- **Filter Bar**: `iOSFilterBarView` with search, semantic toggle, author filter
+- **Grid**: 2 columns on iPhone, 3 on iPad (vs 3 on macOS)
+- **Card Padding**: 12pt (vs 16pt on macOS)
+- **Card Actions**: Always visible (no hover state on iOS)
+
+### Features Removed on iOS
+- Scout Chat (ChatView)
+- Batch Summarize (BatchProcessingView)
+- AI Settings (AISettingsView)
+- AI Summary display on bookmark cards
+- AI tag suggestions on bookmark cards
+
+### Features Kept on iOS
+- Semantic search (Build Search Index)
+- Favorite toggle on bookmark cards
+- Folder assignment on bookmark cards
+- Open in Twitter link
+- Author filter
+- Theme switching
+
+### Bookmark Card Actions (iOS)
+```
+[Star] [Folder] [Open Link]
+```
+Always visible, no AI features.
 
 ---
 

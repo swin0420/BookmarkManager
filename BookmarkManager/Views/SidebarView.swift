@@ -1,4 +1,7 @@
 import SwiftUI
+#if os(iOS)
+import UniformTypeIdentifiers
+#endif
 
 struct SidebarView: View {
     @EnvironmentObject var appState: AppState
@@ -16,16 +19,35 @@ struct SidebarView: View {
     @State private var foldersExpanded = true
     @State private var tagsExpanded = true
     @State private var smartCollectionsExpanded = true
+    #if os(iOS)
+    @State private var showDocumentPicker = false
+    @Binding var showDetail: Bool
+
+    init(showDetail: Binding<Bool>) {
+        self._showDetail = showDetail
+    }
+    #else
+    init() {}
+    #endif
 
     private var themeColors: ThemeColors {
         ThemeColors(colorScheme: colorScheme)
     }
 
+    private func selectSection(_ section: SidebarSection) {
+        appState.selectedSection = section
+        #if os(iOS)
+        showDetail = true
+        #endif
+    }
+
     var body: some View {
         VStack(spacing: 0) {
+            #if os(macOS)
             // Drag area for window
             Color.clear
                 .frame(height: 52)
+            #endif
 
             // Sidebar content
             ScrollView {
@@ -46,7 +68,7 @@ struct SidebarView: View {
                             accentColor: .appAccent,
                             isSelected: appState.selectedSection == .allBookmarks
                         ) {
-                            appState.selectedSection = .allBookmarks
+                            selectSection(.allBookmarks)
                         }
 
                         SidebarItem(
@@ -56,7 +78,7 @@ struct SidebarView: View {
                             accentColor: .yellow,
                             isSelected: appState.selectedSection == .favorites
                         ) {
-                            appState.selectedSection = .favorites
+                            selectSection(.favorites)
                         }
                     }
 
@@ -86,7 +108,7 @@ struct SidebarView: View {
                                 accentColor: .pink,
                                 isSelected: appState.selectedSection == .smartCollection(.withMedia)
                             ) {
-                                appState.selectedSection = .smartCollection(.withMedia)
+                                selectSection(.smartCollection(.withMedia))
                             }
 
                             SidebarItem(
@@ -95,13 +117,14 @@ struct SidebarView: View {
                                 accentColor: .cyan,
                                 isSelected: appState.selectedSection == .smartCollection(.textOnly)
                             ) {
-                                appState.selectedSection = .smartCollection(.textOnly)
+                                selectSection(.smartCollection(.textOnly))
                             }
 
                         }
                     }
 
-                    // AI section
+                    // AI section (macOS only for Scout and Batch Summarize)
+                    #if os(macOS)
                     VStack(alignment: .leading, spacing: 4) {
                         Text("AI")
                             .font(.system(size: 11, weight: .semibold))
@@ -223,6 +246,69 @@ struct SidebarView: View {
                             }
                         }
                     }
+                    #else
+                    // iOS: Only show Search Index section
+                    VStack(alignment: .leading, spacing: 4) {
+                        Text("SEARCH")
+                            .font(.system(size: 11, weight: .semibold))
+                            .foregroundColor(themeColors.mutedText)
+                            .tracking(1)
+                            .padding(.horizontal, 12)
+                            .padding(.bottom, 8)
+
+                        Button(action: { startEmbeddingGeneration() }) {
+                            HStack(spacing: 10) {
+                                Image(systemName: "magnifyingglass.circle")
+                                    .font(.system(size: 14))
+                                    .foregroundColor(.cyan)
+                                    .frame(width: 20)
+
+                                Text("Build Search Index")
+                                    .font(.system(size: 13))
+                                    .foregroundColor(themeColors.secondaryText)
+
+                                Spacer()
+
+                                if isGeneratingEmbeddings, let progress = embeddingProgress {
+                                    Text("\(progress.current)/\(progress.total)")
+                                        .font(.system(size: 11, weight: .medium))
+                                        .foregroundColor(.cyan)
+                                        .padding(.horizontal, 8)
+                                        .padding(.vertical, 3)
+                                        .background(
+                                            Capsule()
+                                                .fill(Color.cyan.opacity(0.2))
+                                        )
+                                } else {
+                                    let missing = SemanticSearchService.shared.missingEmbeddingCount()
+                                    if missing > 0 {
+                                        Text("\(missing)")
+                                            .font(.system(size: 11, weight: .medium))
+                                            .foregroundColor(.cyan)
+                                            .padding(.horizontal, 8)
+                                            .padding(.vertical, 3)
+                                            .background(
+                                                Capsule()
+                                                    .fill(Color.cyan.opacity(0.2))
+                                            )
+                                    } else {
+                                        Image(systemName: "checkmark.circle.fill")
+                                            .font(.system(size: 12))
+                                            .foregroundColor(.green)
+                                    }
+                                }
+                            }
+                            .padding(.horizontal, 12)
+                            .padding(.vertical, 8)
+                            .background(
+                                RoundedRectangle(cornerRadius: 8)
+                                    .fill(Color.clear)
+                            )
+                        }
+                        .buttonStyle(.plain)
+                        .disabled(isGeneratingEmbeddings)
+                    }
+                    #endif
 
                     // Folders section
                     VStack(alignment: .leading, spacing: 4) {
@@ -272,7 +358,7 @@ struct SidebarView: View {
                                         folder: folder,
                                         isSelected: appState.selectedSection == .folder(folder.id),
                                         action: {
-                                            appState.selectedSection = .folder(folder.id)
+                                            selectSection(.folder(folder.id))
                                         },
                                         selectedSection: $appState.selectedSection
                                     )
@@ -322,7 +408,7 @@ struct SidebarView: View {
                                     tag: tag,
                                     isSelected: appState.selectedSection == .tag(tag.id),
                                     action: {
-                                        appState.selectedSection = .tag(tag.id)
+                                        selectSection(.tag(tag.id))
                                     },
                                     selectedSection: $appState.selectedSection
                                 )
@@ -341,6 +427,7 @@ struct SidebarView: View {
                 Divider()
                     .background(themeColors.divider)
 
+                #if os(macOS)
                 Button(action: { showSettingsSheet = true }) {
                     HStack {
                         Image(systemName: "gearshape.fill")
@@ -358,6 +445,7 @@ struct SidebarView: View {
                 }
                 .buttonStyle(.plain)
                 .padding(.horizontal, 12)
+                #endif
 
                 Button(action: importDatabase) {
                     HStack {
@@ -416,6 +504,7 @@ struct SidebarView: View {
         .sheet(isPresented: $showNewTagSheet) {
             NewTagSheet(isPresented: $showNewTagSheet)
         }
+        #if os(macOS)
         .sheet(isPresented: $showSettingsSheet) {
             AISettingsView()
         }
@@ -425,6 +514,14 @@ struct SidebarView: View {
         .sheet(isPresented: $showBatchProcessingSheet) {
             BatchProcessingView(mode: .summarize)
         }
+        #endif
+        #if os(iOS)
+        .sheet(isPresented: $showDocumentPicker) {
+            DocumentPicker(contentTypes: [UTType.json, UTType.database]) { url in
+                handleImportedFile(url)
+            }
+        }
+        #endif
     }
 
     private func startEmbeddingGeneration() {
@@ -456,6 +553,9 @@ struct SidebarView: View {
     }
 
     private func importDatabase() {
+        #if os(iOS)
+        showDocumentPicker = true
+        #else
         let panel = NSOpenPanel()
         panel.allowedContentTypes = [.database, .json]
         panel.allowsMultipleSelection = false
@@ -474,7 +574,31 @@ struct SidebarView: View {
                 dbManager.importFromPath(url.path)
             }
         }
+        #endif
     }
+
+    #if os(iOS)
+    private func handleImportedFile(_ url: URL) {
+        // Try to access security-scoped resource (may fail for copied files, which is OK)
+        let hasAccess = url.startAccessingSecurityScopedResource()
+        defer {
+            if hasAccess {
+                url.stopAccessingSecurityScopedResource()
+            }
+        }
+
+        if url.pathExtension.lowercased() == "json" {
+            let result = dbManager.importFromJSONFileWithCount(url.path)
+            DispatchQueue.main.async {
+                appState.importedNewCount = result.newCount
+                appState.importedUpdatedCount = result.updatedCount
+                appState.showImportSuccess = true
+            }
+        } else {
+            dbManager.importFromPath(url.path)
+        }
+    }
+    #endif
 }
 
 struct SidebarItem: View {
@@ -1030,3 +1154,39 @@ struct NewTagSheet: View {
         .background(themeColors.cardBackground)
     }
 }
+
+// MARK: - iOS Document Picker
+#if os(iOS)
+struct DocumentPicker: UIViewControllerRepresentable {
+    let contentTypes: [UTType]
+    let onPick: (URL) -> Void
+
+    func makeUIViewController(context: Context) -> UIDocumentPickerViewController {
+        let picker = UIDocumentPickerViewController(forOpeningContentTypes: contentTypes, asCopy: true)
+        picker.delegate = context.coordinator
+        picker.allowsMultipleSelection = false
+        return picker
+    }
+
+    func updateUIViewController(_ uiViewController: UIDocumentPickerViewController, context: Context) {}
+
+    func makeCoordinator() -> Coordinator {
+        Coordinator(onPick: onPick)
+    }
+
+    class Coordinator: NSObject, UIDocumentPickerDelegate {
+        let onPick: (URL) -> Void
+
+        init(onPick: @escaping (URL) -> Void) {
+            self.onPick = onPick
+        }
+
+        func documentPicker(_ controller: UIDocumentPickerViewController, didPickDocumentsAt urls: [URL]) {
+            guard let url = urls.first else { return }
+            onPick(url)
+        }
+
+        func documentPickerWasCancelled(_ controller: UIDocumentPickerViewController) {}
+    }
+}
+#endif

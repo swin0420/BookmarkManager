@@ -45,7 +45,9 @@ class DatabaseManager: ObservableObject {
             try? FileManager.default.copyItem(atPath: oldPath, toPath: dbPath)
         }
 
-        if sqlite3_open(dbPath, &db) != SQLITE_OK {
+        // Open with FULLMUTEX for thread-safe serialized mode
+        let flags = SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE | SQLITE_OPEN_FULLMUTEX
+        if sqlite3_open_v2(dbPath, &db, flags, nil) != SQLITE_OK {
             print("Error opening database: \(String(cString: sqlite3_errmsg(db)))")
         }
     }
@@ -306,6 +308,13 @@ class DatabaseManager: ObservableObject {
     func getBookmarksWithoutSummary(limit: Int = 1000) -> [Bookmark] {
         let sql = "SELECT * FROM bookmarks WHERE summary IS NULL OR summary = '' LIMIT \(limit)"
         return queryBookmarks(sql)
+    }
+
+    func getBookmarksByIds(_ ids: [String]) -> [Bookmark] {
+        guard !ids.isEmpty else { return [] }
+        let placeholders = ids.map { _ in "?" }.joined(separator: ", ")
+        let sql = "SELECT * FROM bookmarks WHERE id IN (\(placeholders))"
+        return queryBookmarks(sql, params: ids)
     }
 
     // MARK: - Tags

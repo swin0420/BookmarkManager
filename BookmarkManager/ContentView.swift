@@ -355,21 +355,30 @@ struct MainContentView: View {
     private func loadBookmarks() {
         isLoading = true
 
+        // Capture state on main thread before background work
+        let isSemanticEnabled = appState.isSemanticSearchEnabled
+        let searchQuery = appState.searchQuery
+        let selectedSection = appState.selectedSection
+        let selectedAuthor = appState.selectedAuthor
+        let dateFrom = appState.dateFrom
+        let dateTo = appState.dateTo
+        let sortOrder = appState.sortOrder
+
         DispatchQueue.global(qos: .userInitiated).async {
             var results: [Bookmark] = []
 
             // Check if semantic search is enabled, we have a query, and we're in All Bookmarks
-            let canUseSemanticSearch = appState.isSemanticSearchEnabled &&
-                                        !appState.searchQuery.isEmpty &&
-                                        appState.selectedSection == .allBookmarks
+            let canUseSemanticSearch = isSemanticEnabled &&
+                                        !searchQuery.isEmpty &&
+                                        selectedSection == .allBookmarks
 
             if canUseSemanticSearch {
                 // Use semantic search (unlimited)
-                let searchResults = SemanticSearchService.shared.search(query: appState.searchQuery, limit: 10000)
+                let searchResults = SemanticSearchService.shared.search(query: searchQuery, limit: 10000)
                 let bookmarkIds = searchResults.map { $0.bookmarkId }
 
                 // Fetch bookmarks by IDs while preserving order
-                let allBookmarks = dbManager.searchBookmarks(limit: 10000)
+                let allBookmarks = self.dbManager.searchBookmarks(limit: 10000)
                 let bookmarkMap = Dictionary(uniqueKeysWithValues: allBookmarks.map { ($0.id, $0) })
 
                 for id in bookmarkIds {
@@ -377,15 +386,15 @@ struct MainContentView: View {
                         // Apply additional filters
                         var include = true
 
-                        if let author = appState.selectedAuthor, !author.isEmpty {
+                        if let author = selectedAuthor, !author.isEmpty {
                             include = include && bookmark.authorHandle == author
                         }
 
-                        if let dateFrom = appState.dateFrom {
+                        if let dateFrom = dateFrom {
                             include = include && bookmark.postedAt >= dateFrom
                         }
 
-                        if let dateTo = appState.dateTo {
+                        if let dateTo = dateTo {
                             include = include && bookmark.postedAt <= dateTo
                         }
 
@@ -397,19 +406,19 @@ struct MainContentView: View {
                 // Semantic search: keep relevance order, don't sort
             } else {
                 // Regular search
-                switch appState.selectedSection {
+                switch selectedSection {
                 case .smartCollection(let type):
-                    results = dbManager.getSmartCollectionBookmarks(
+                    results = self.dbManager.getSmartCollectionBookmarks(
                         type,
-                        author: appState.selectedAuthor,
-                        query: appState.searchQuery.isEmpty ? nil : appState.searchQuery
+                        author: selectedAuthor,
+                        query: searchQuery.isEmpty ? nil : searchQuery
                     )
                 default:
                     var tagId: String?
                     var folderId: String?
                     var favoritesOnly = false
 
-                    switch appState.selectedSection {
+                    switch selectedSection {
                     case .allBookmarks:
                         break
                     case .favorites:
@@ -422,19 +431,19 @@ struct MainContentView: View {
                         break
                     }
 
-                    results = dbManager.searchBookmarks(
-                        query: appState.searchQuery.isEmpty ? nil : appState.searchQuery,
-                        author: appState.selectedAuthor,
+                    results = self.dbManager.searchBookmarks(
+                        query: searchQuery.isEmpty ? nil : searchQuery,
+                        author: selectedAuthor,
                         tagId: tagId,
                         folderId: folderId,
                         favoritesOnly: favoritesOnly,
-                        dateFrom: appState.dateFrom,
-                        dateTo: appState.dateTo
+                        dateFrom: dateFrom,
+                        dateTo: dateTo
                     )
                 }
 
                 // Apply sorting only for regular search (not semantic)
-                results = sortBookmarks(results)
+                results = self.sortBookmarks(results, sortOrder: sortOrder)
             }
 
             DispatchQueue.main.async {
@@ -445,47 +454,94 @@ struct MainContentView: View {
     }
 
     private func refreshBookmarks() {
+        // Capture state on main thread before background work
+        let isSemanticEnabled = appState.isSemanticSearchEnabled
+        let searchQuery = appState.searchQuery
+        let selectedSection = appState.selectedSection
+        let selectedAuthor = appState.selectedAuthor
+        let dateFrom = appState.dateFrom
+        let dateTo = appState.dateTo
+        let sortOrder = appState.sortOrder
+
         // Quick refresh without loading indicator to avoid blinking
         DispatchQueue.global(qos: .userInitiated).async {
             var results: [Bookmark] = []
 
-            switch appState.selectedSection {
-            case .smartCollection(let type):
-                results = dbManager.getSmartCollectionBookmarks(
-                    type,
-                    author: appState.selectedAuthor,
-                    query: appState.searchQuery.isEmpty ? nil : appState.searchQuery
-                )
-            default:
-                var tagId: String?
-                var folderId: String?
-                var favoritesOnly = false
+            // Check if semantic search is enabled (same logic as loadBookmarks)
+            let canUseSemanticSearch = isSemanticEnabled &&
+                                        !searchQuery.isEmpty &&
+                                        selectedSection == .allBookmarks
 
-                switch appState.selectedSection {
-                case .allBookmarks:
-                    break
-                case .favorites:
-                    favoritesOnly = true
-                case .folder(let id):
-                    folderId = id
-                case .tag(let id):
-                    tagId = id
+            if canUseSemanticSearch {
+                // Use semantic search to preserve relevance order
+                let searchResults = SemanticSearchService.shared.search(query: searchQuery, limit: 10000)
+                let bookmarkIds = searchResults.map { $0.bookmarkId }
+
+                let allBookmarks = self.dbManager.searchBookmarks(limit: 10000)
+                let bookmarkMap = Dictionary(uniqueKeysWithValues: allBookmarks.map { ($0.id, $0) })
+
+                for id in bookmarkIds {
+                    if let bookmark = bookmarkMap[id] {
+                        var include = true
+
+                        if let author = selectedAuthor, !author.isEmpty {
+                            include = include && bookmark.authorHandle == author
+                        }
+
+                        if let dateFrom = dateFrom {
+                            include = include && bookmark.postedAt >= dateFrom
+                        }
+
+                        if let dateTo = dateTo {
+                            include = include && bookmark.postedAt <= dateTo
+                        }
+
+                        if include {
+                            results.append(bookmark)
+                        }
+                    }
+                }
+                // Semantic search: keep relevance order, don't sort
+            } else {
+                switch selectedSection {
+                case .smartCollection(let type):
+                    results = self.dbManager.getSmartCollectionBookmarks(
+                        type,
+                        author: selectedAuthor,
+                        query: searchQuery.isEmpty ? nil : searchQuery
+                    )
                 default:
-                    break
+                    var tagId: String?
+                    var folderId: String?
+                    var favoritesOnly = false
+
+                    switch selectedSection {
+                    case .allBookmarks:
+                        break
+                    case .favorites:
+                        favoritesOnly = true
+                    case .folder(let id):
+                        folderId = id
+                    case .tag(let id):
+                        tagId = id
+                    default:
+                        break
+                    }
+
+                    results = self.dbManager.searchBookmarks(
+                        query: searchQuery.isEmpty ? nil : searchQuery,
+                        author: selectedAuthor,
+                        tagId: tagId,
+                        folderId: folderId,
+                        favoritesOnly: favoritesOnly,
+                        dateFrom: dateFrom,
+                        dateTo: dateTo
+                    )
                 }
 
-                results = dbManager.searchBookmarks(
-                    query: appState.searchQuery.isEmpty ? nil : appState.searchQuery,
-                    author: appState.selectedAuthor,
-                    tagId: tagId,
-                    folderId: folderId,
-                    favoritesOnly: favoritesOnly,
-                    dateFrom: appState.dateFrom,
-                    dateTo: appState.dateTo
-                )
+                // Apply sorting only for regular search (not semantic)
+                results = self.sortBookmarks(results, sortOrder: sortOrder)
             }
-
-            results = sortBookmarks(results)
 
             DispatchQueue.main.async {
                 withAnimation(.none) {
@@ -495,8 +551,9 @@ struct MainContentView: View {
         }
     }
 
-    private func sortBookmarks(_ bookmarks: [Bookmark]) -> [Bookmark] {
-        switch appState.sortOrder {
+    private func sortBookmarks(_ bookmarks: [Bookmark], sortOrder: SortOrder? = nil) -> [Bookmark] {
+        let order = sortOrder ?? appState.sortOrder
+        switch order {
         case .recentFirst:
             return bookmarks.sorted { $0.postedAt > $1.postedAt }
         case .oldestFirst:
